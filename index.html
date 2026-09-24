@@ -84,14 +84,14 @@
   .votos { font-weight: 500; font-size: 21px; color: var(--mut); margin-top: 6px; font-variant-numeric: tabular-nums; }
 
   /* deputados: 10 mais votados em 2 colunas */
-  #cands.mini { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 12px; }
-  #cands.mini .cand { grid-template-columns: 72px 1fr auto; gap: 0 14px; padding: 8px 14px 8px 8px; }
+  #cands.mini { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 10px 12px; }
+  #cands.mini .cand { grid-template-columns: 72px minmax(0,1fr) auto; gap: 0 14px; padding: 8px 14px 8px 8px; }
   #cands.mini .foto { width: 72px; height: 72px; font-size: 28px; }
-  #cands.mini .nome { font-size: 25px; }
+  #cands.mini .nome { font-size: 23px; }
   #cands.mini .part { font-size: 16px; margin-top: 2px; }
   #cands.mini .part .st { font-size: 13px; padding: 2px 7px; margin-left: 8px; }
   #cands.mini .barra { display: none; }
-  #cands.mini .pct { font-size: 34px; }
+  #cands.mini .pct { font-size: 32px; }
   #cands.mini .pct small { font-size: 20px; }
   #cands.mini .votos { font-size: 15px; margin-top: 3px; white-space: nowrap; }
   #cands.mini .num { white-space: nowrap; }
