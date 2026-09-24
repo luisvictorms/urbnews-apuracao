@@ -251,7 +251,7 @@ function resultado(aba) {
     sq: c.sqcand, nome: nomeBonito(c.nm), numero: c.n, partido: dec(c.cc).split(' - ')[0].trim(),
     votos: num(c.vap), pct: pnum(c.pvap), st: dec(c.st).toUpperCase(), foto: urlFoto(aba, d.turno, c.sqcand),
   }));
-  return { cands, secoes: pnum(raw.pst), hora: (raw.ht || '').slice(0, 5), turno: d.turno };
+  return { cands, secoes: pnum(raw.pst), consulta: new Date(d.ok).toLocaleTimeString('pt-BR'), turno: d.turno };
 }
 
 /* ======================= mapa ======================= */
@@ -295,7 +295,7 @@ function render(trocouAba) {
   document.getElementById('local').textContent = aba.local;
   document.getElementById('secoes').textContent = fpct(res ? res.secoes : 0) + '%';
   document.getElementById('secoesbar').style.width = (res ? res.secoes : 0) + '%';
-  document.getElementById('fonte').textContent = res && res.hora ? `Fonte: TSE · Atualizado às ${res.hora}` : 'Fonte: TSE';
+  document.getElementById('fonte').textContent = res ? `Fonte: TSE · Última consulta às ${res.consulta}` : 'Fonte: TSE';
   document.getElementById('abas').innerHTML = ABAS.map((a, i) =>
     `<span class="${i === atual ? 'on' : ''}">${DICAS ? `<kbd>${i}</kbd>` : ''}${a.id === 'br' ? 'BRASIL' : a.id.toUpperCase()}</span>`).join('');
   // candidatos
