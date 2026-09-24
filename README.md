@@ -5,7 +5,8 @@ Tela de apuração 1920×1080 para o vMix (Web Browser input). Dados direto do T
 **Teclas:** `0`/`P` Presidente (Brasil) · `1` AM · `2` PA · `3` MA · `4` PI · `5` CE · `6` AL · `←` `→` navegam · `A` liga/desliga rodízio automático.
 
 **Parâmetros de URL**
-- `?sim=1` simulação com a apuração real de 2022 (mostra selo SIMULAÇÃO)
+- `?sim=1` simulação com o resultado final real de 2022 (mostra selo SIMULAÇÃO)
+- `?sim=1&subir=1` simulação com a apuração subindo de 0 a 100% em 20 min
 - `?turno=2` força o 2º turno (automático a partir de 11/10/2026)
 - `#ce` abre direto numa aba (`br am pa ma pi ce al`); trocar o `#` troca a aba sem recarregar
 - `?dicas=1` mostra os números das teclas nas abas
