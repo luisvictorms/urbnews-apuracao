@@ -83,13 +83,25 @@
   .pct small { font-size: 32px; font-weight: 700; }
   .votos { font-weight: 500; font-size: 21px; color: var(--mut); margin-top: 6px; font-variant-numeric: tabular-nums; }
 
+  /* deputados: 10 mais votados em 2 colunas */
+  #cands.mini { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 12px; }
+  #cands.mini .cand { grid-template-columns: 72px 1fr auto; gap: 0 14px; padding: 8px 14px 8px 8px; }
+  #cands.mini .foto { width: 72px; height: 72px; font-size: 28px; }
+  #cands.mini .nome { font-size: 25px; }
+  #cands.mini .part { font-size: 16px; margin-top: 2px; }
+  #cands.mini .part .st { font-size: 13px; padding: 2px 7px; margin-left: 8px; }
+  #cands.mini .barra { display: none; }
+  #cands.mini .pct { font-size: 34px; }
+  #cands.mini .pct small { font-size: 20px; }
+  #cands.mini .votos { font-size: 15px; margin-top: 3px; }
+
   .vazio { font-weight: 500; font-size: 30px; color: var(--mut); padding: 40px 0; }
 
   /* rodapé */
   #rodape { position: absolute; left: 96px; right: 90px; bottom: 44px; display: flex; justify-content: space-between; align-items: center; }
   .fonte { font-weight: 500; font-size: 20px; color: var(--mut); letter-spacing: 1px; }
-  .abas { display: flex; gap: 8px; }
-  .abas span { font-weight: 700; font-size: 20px; letter-spacing: 2px; padding: 7px 14px; border-radius: 4px;
+  .abas { display: flex; gap: 6px; }
+  .abas span { font-weight: 700; font-size: 17px; letter-spacing: 1px; padding: 7px 11px; border-radius: 4px;
     color: var(--mut); border: 2px solid var(--line); transition: all .3s; }
   .abas span.on { background: var(--acc); border-color: var(--acc); color: #fff; }
   .abas span kbd { font: inherit; opacity: .6; margin-right: 6px; }
@@ -143,7 +155,7 @@ const DATAS = ['04/10/2026', '25/10/2026'];
 // simulação usa a apuração real de 2022
 const COD_SIM = { 1: { federal: '544', estadual: '546' }, 2: { federal: '545', estadual: '547' } };
 
-// ordem das abas: tecla 0 = presidente, 1..6 = governadores (mesma ordem do mapa do pacote)
+// ordem das abas: tecla 0 = presidente, 1..6 = governadores (mesma ordem do mapa do pacote), 7..9 = Ceará
 const ABAS = [
   { id: 'br', cargo: 1, abr: 'br', titulo: 'PRESIDENTE', local: 'BRASIL' },
   { id: 'am', cargo: 3, abr: 'am', titulo: 'GOVERNADOR', local: 'AMAZONAS' },
@@ -152,6 +164,9 @@ const ABAS = [
   { id: 'pi', cargo: 3, abr: 'pi', titulo: 'GOVERNADOR', local: 'PIAUÍ' },
   { id: 'ce', cargo: 3, abr: 'ce', titulo: 'GOVERNADOR', local: 'CEARÁ' },
   { id: 'al', cargo: 3, abr: 'al', titulo: 'GOVERNADOR', local: 'ALAGOAS' },
+  { id: 'sen-ce', cargo: 5, abr: 'ce', titulo: 'SENADO', local: 'CEARÁ', sub: '2 VAGAS', aba: 'SENADO' },
+  { id: 'df-ce', cargo: 6, abr: 'ce', titulo: 'DEPUTADO FEDERAL', local: 'CEARÁ', sub: 'MAIS VOTADOS', aba: 'DEP. FED', lista: 10 },
+  { id: 'de-ce', cargo: 7, abr: 'ce', titulo: 'DEPUTADO ESTADUAL', local: 'CEARÁ', sub: 'MAIS VOTADOS', aba: 'DEP. EST', lista: 10 },
 ];
 
 /* ======================= estado ======================= */
@@ -292,10 +307,12 @@ function render(trocouAba) {
   // mapa
   const svg = document.getElementById('mapa');
   svg.classList.toggle('todos', aba.id === 'br');
-  svg.querySelectorAll('.uf path').forEach(p => p.classList.toggle('ativo', p.id === 'uf-' + (NOSSOS[aba.id] || '')));
-  svg.querySelectorAll('.pino').forEach(p => p.classList.toggle('ativo', p.id === 'pino-' + aba.id));
+  const uf = aba.id === 'br' ? '' : aba.abr;
+  svg.querySelectorAll('.uf path').forEach(p => p.classList.toggle('ativo', p.id === 'uf-' + uf.toUpperCase()));
+  svg.querySelectorAll('.pino').forEach(p => p.classList.toggle('ativo', p.id === 'pino-' + uf));
   // cabeçalho
-  const turnoTxt = res && res.turno !== TURNO ? `RESULTADO DO 1º TURNO` : `APURAÇÃO · ${TURNO}º TURNO`;
+  const turnoTxt = res && res.turno !== TURNO ? (aba.cargo > 3 ? 'RESULTADO FINAL' : 'RESULTADO DO 1º TURNO')
+    : `APURAÇÃO · ${TURNO}º TURNO` + (aba.sub ? ` · ${aba.sub}` : '');
   document.getElementById('sobre').textContent = turnoTxt;
   document.getElementById('simtag').innerHTML = SIM ? '<span class="sim">SIMULAÇÃO 2022</span>' : '';
   document.getElementById('cargo').textContent = aba.titulo;
@@ -304,17 +321,18 @@ function render(trocouAba) {
   document.getElementById('secoesbar').style.width = (res ? res.secoes : 0) + '%';
   document.getElementById('fonte').textContent = res ? `Fonte: TSE · Última consulta às ${res.consulta}` : 'Fonte: TSE';
   document.getElementById('abas').innerHTML = ABAS.map((a, i) =>
-    `<span data-i="${i}" class="${i === atual ? 'on' : ''}">${DICAS ? `<kbd>${i}</kbd>` : ''}${a.id === 'br' ? 'BRASIL' : a.id.toUpperCase()}</span>`).join('');
+    `<span data-i="${i}" class="${i === atual ? 'on' : ''}">${DICAS ? `<kbd>${i}</kbd>` : ''}${a.aba || (a.id === 'br' ? 'BRASIL' : a.id.toUpperCase())}</span>`).join('');
   // candidatos
   const box = document.getElementById('cands');
   if (!res || !res.cands.length) {
     box.innerHTML = `<div class="vazio">Aguardando os primeiros resultados do TSE…</div>`;
     return;
   }
-  const lista = res.cands.slice(0, res.turno === 2 ? 2 : 4);
+  const lista = res.cands.slice(0, aba.lista || (res.turno === 2 ? 2 : 4));
+  box.classList.toggle('mini', !!aba.lista);
   const liderSq = res.secoes > 0 ? lista[0].sq : null;
   const html = c => {
-    const st = c.st === 'ELEITO' || c.st === 'MATEMATICAMENTE ELEITO' ? '<span class="st">ELEITO</span>'
+    const st = c.st.startsWith('ELEITO') || c.st === 'MATEMATICAMENTE ELEITO' ? '<span class="st">ELEITO</span>'
       : c.st === '2º TURNO' ? '<span class="st t2">2º TURNO</span>' : '';
     const ini = c.nome.split(' ').map(w => w[0]).slice(0, 2).join('');
     const [int, dc] = fpct(c.pct).split(',');

@@ -34,6 +34,10 @@
   button.on { background: var(--acc); border-color: var(--acc); }
   button.on .nm { color: #fff; }
   button.enviando { border-color: var(--acc); }
+  .sec { margin: 18px 0 8px; font-size: 13px; font-weight: 700; letter-spacing: 3px; color: var(--mut); }
+  .grade.ce { grid-template-columns: 1fr 1fr 1fr; }
+  .grade.ce button { min-height: 84px; padding: 12px 10px; }
+  .grade.ce .sg { font-size: 17px; letter-spacing: 0; }
   .setas { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
   .setas button { min-height: 60px; align-items: center; justify-content: center; font-weight: 800; font-size: 22px; }
   .aviso { margin-top: 40px; padding: 20px; border: 2px solid #d29922; border-radius: 12px; font-weight: 600; line-height: 1.5; }
@@ -60,7 +64,11 @@ const ABAS = [
   { id: 'pi', sg: 'PI', nm: 'PIAUÍ' },
   { id: 'ce', sg: 'CE', nm: 'CEARÁ' },
   { id: 'al', sg: 'AL', nm: 'ALAGOAS' },
+  { id: 'sen-ce', sg: 'SENADO', nm: 'CEARÁ', ce: 1 },
+  { id: 'df-ce', sg: 'DEP. FEDERAL', nm: 'CEARÁ', ce: 1 },
+  { id: 'de-ce', sg: 'DEP. ESTADUAL', nm: 'CEARÁ', ce: 1 },
 ];
+const rotulo = a => a.id === 'br' ? 'PRESIDENTE · BRASIL' : a.ce ? a.sg + ' · CEARÁ' : 'GOVERNADOR · ' + a.nm;
 const app = document.getElementById('app');
 let atual = null;
 
@@ -69,15 +77,18 @@ if (!window.Sync) {
 } else {
   app.innerHTML = `
     <div class="noar">NA TELA: <b id="noar">—</b></div>
-    <div class="grade">${ABAS.map(a => `<button data-id="${a.id}" class="${a.id === 'br' ? 'br' : ''}">
-      <span class="sg">${a.sg}</span><span class="nm">${a.id === 'br' ? 'PRESIDENTE · BRASIL' : 'GOVERNADOR · ' + a.nm}</span></button>`).join('')}</div>
+    <div class="grade">${ABAS.filter(a => !a.ce).map(a => `<button data-id="${a.id}" class="${a.id === 'br' ? 'br' : ''}">
+      <span class="sg">${a.sg}</span><span class="nm">${rotulo(a)}</span></button>`).join('')}</div>
+    <div class="sec">CEARÁ</div>
+    <div class="grade ce">${ABAS.filter(a => a.ce).map(a => `<button data-id="${a.id}">
+      <span class="sg">${a.sg}</span><span class="nm">CEARÁ</span></button>`).join('')}</div>
     <div class="setas"><button data-passo="-1">◀</button><button data-passo="1">▶</button></div>`;
 
   const marcar = id => {
     atual = id;
     document.querySelectorAll('[data-id]').forEach(b => { b.classList.toggle('on', b.dataset.id === id); b.classList.remove('enviando'); });
     const a = ABAS.find(x => x.id === id);
-    document.getElementById('noar').textContent = a ? (a.id === 'br' ? 'PRESIDENTE · BRASIL' : 'GOVERNADOR · ' + a.nm) : '—';
+    document.getElementById('noar').textContent = a ? rotulo(a) : '—';
   };
   const ir = id => {
     Sync.enviar(id);
