@@ -26,17 +26,8 @@
       radial-gradient(ellipse 90% 80% at 30% 35%, #21414e 0%, var(--bg) 45%, var(--bg2) 100%); }
 
   /* ---------- marca ---------- */
-  .marca { position: absolute; left: 96px; top: 72px; width: 330px; }
-  .marca .tag { display: inline-block; background: var(--tag); color: var(--bg); border-radius: 6px 6px 6px 0;
-    padding: 4px 14px 5px; font-size: 30px; letter-spacing: -.5px; position: relative; z-index: 1; margin-left: 20px; }
-  .marca .tag b { font-weight: 800; font-style: italic; }
-  .marca .tag span { font-weight: 400; }
-  .marca .caixa { border: 2px solid rgba(255,255,255,.7); margin-top: -18px; padding: 16px 0 0; text-align: center; border-bottom: 0; }
-  .marca .el { font-weight: 800; font-size: 62px; line-height: 1; letter-spacing: 1px; }
-  .marca .ano { display: flex; align-items: center; gap: 14px; font-weight: 400; font-size: 26px; letter-spacing: 12px;
-    margin-top: 6px; }
-  .marca .ano::before, .marca .ano::after { content: ""; flex: 1; height: 2px; background: rgba(255,255,255,.7); }
-  .marca .ano::after { margin-left: -12px; }
+  .marca { position: absolute; left: 96px; top: 72px; width: 360px; }
+  .marca img { display: block; width: 100%; height: auto; }
 
   /* ---------- mapa ---------- */
   #mapa { position: absolute; left: 70px; top: 300px; width: 740px; height: 700px; overflow: visible; }
@@ -110,10 +101,7 @@
 </head>
 <body>
 <div id="stage">
-  <div class="marca">
-    <div class="tag"><span>urb</span><b>.NEWS</b></div>
-    <div class="caixa"><div class="el">ELEIÇÕES</div><div class="ano">2026</div></div>
-  </div>
+  <div class="marca"><img src="logo.png" alt="urb.NEWS Eleições 2026"></div>
 
   <svg id="mapa" viewBox="-10 0 840 810"></svg>
 
