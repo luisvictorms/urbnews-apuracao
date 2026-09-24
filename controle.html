@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#14313d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Controle · Apuração Urbnews</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root { --bg: #14313d; --bg2: #0d1f27; --acc: #00a2ff; --tx: #fff; --mut: #9fb2bc; --card: rgba(255,255,255,.06); --line: rgba(255,255,255,.14); }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { min-height: 100%; }
+  body { font-family: Montserrat, sans-serif; color: var(--tx); user-select: none;
+    background: radial-gradient(ellipse at 30% 0%, #21414e, var(--bg) 45%, var(--bg2));
+    padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom)); min-height: 100vh; }
+  header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  header img { height: 54px; }
+  .con { font-size: 12px; font-weight: 600; color: var(--mut); text-align: right; line-height: 1.5; }
+  .con i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: #f85149; margin-right: 5px; }
+  .con.ok i { background: #2ea043; }
+  .noar { margin: 18px 0 12px; font-size: 13px; font-weight: 700; letter-spacing: 3px; color: var(--mut); }
+  .noar b { color: var(--tx); }
+  .grade { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  button { font: inherit; color: inherit; background: var(--card); border: 2px solid var(--line); border-radius: 12px;
+    padding: 16px 14px; text-align: left; min-height: 96px; display: flex; flex-direction: column; justify-content: space-between;
+    transition: background .15s, border-color .15s, transform .08s; cursor: pointer; }
+  button:active { transform: scale(.97); }
+  button.br { grid-column: 1 / -1; min-height: 88px; }
+  button .sg { font-weight: 900; font-size: 34px; letter-spacing: -.5px; line-height: 1; }
+  button .nm { font-weight: 600; font-size: 13px; color: var(--mut); letter-spacing: 1px; margin-top: 8px; }
+  button.on { background: var(--acc); border-color: var(--acc); }
+  button.on .nm { color: #fff; }
+  button.enviando { border-color: var(--acc); }
+  .setas { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+  .setas button { min-height: 60px; align-items: center; justify-content: center; font-weight: 800; font-size: 22px; }
+  .aviso { margin-top: 40px; padding: 20px; border: 2px solid #d29922; border-radius: 12px; font-weight: 600; line-height: 1.5; }
+  .aviso code { background: var(--card); padding: 2px 6px; border-radius: 4px; }
+  footer { margin-top: 18px; font-size: 11px; color: var(--mut); text-align: center; }
+</style>
+</head>
+<body>
+<header>
+  <img src="logo.png" alt="urb.NEWS Eleições 2026">
+  <div class="con" id="con"><i></i><span>conectando…</span></div>
+</header>
+<div id="app"></div>
+<footer>Toque numa disputa para colocá-la na tela</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="sync.js"></script>
+<script>
+const ABAS = [
+  { id: 'br', sg: 'BRASIL', nm: 'PRESIDENTE' },
+  { id: 'am', sg: 'AM', nm: 'AMAZONAS' },
+  { id: 'pa', sg: 'PA', nm: 'PARÁ' },
+  { id: 'ma', sg: 'MA', nm: 'MARANHÃO' },
+  { id: 'pi', sg: 'PI', nm: 'PIAUÍ' },
+  { id: 'ce', sg: 'CE', nm: 'CEARÁ' },
+  { id: 'al', sg: 'AL', nm: 'ALAGOAS' },
+];
+const app = document.getElementById('app');
+let atual = null;
+
+if (!window.Sync) {
+  app.innerHTML = `<div class="aviso">Falta o código da sala no link.<br>Use o endereço completo, ex.: <code>controle.html?sala=CÓDIGO</code></div>`;
+} else {
+  app.innerHTML = `
+    <div class="noar">NA TELA: <b id="noar">—</b></div>
+    <div class="grade">${ABAS.map(a => `<button data-id="${a.id}" class="${a.id === 'br' ? 'br' : ''}">
+      <span class="sg">${a.sg}</span><span class="nm">${a.id === 'br' ? 'PRESIDENTE · BRASIL' : 'GOVERNADOR · ' + a.nm}</span></button>`).join('')}</div>
+    <div class="setas"><button data-passo="-1">◀</button><button data-passo="1">▶</button></div>`;
+
+  const marcar = id => {
+    atual = id;
+    document.querySelectorAll('[data-id]').forEach(b => { b.classList.toggle('on', b.dataset.id === id); b.classList.remove('enviando'); });
+    const a = ABAS.find(x => x.id === id);
+    document.getElementById('noar').textContent = a ? (a.id === 'br' ? 'PRESIDENTE · BRASIL' : 'GOVERNADOR · ' + a.nm) : '—';
+  };
+  const ir = id => {
+    Sync.enviar(id);
+    marcar(id);
+    if (navigator.vibrate) navigator.vibrate(15);
+  };
+
+  app.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.dataset.id) return ir(b.dataset.id);
+    const i = ABAS.findIndex(a => a.id === atual);
+    ir(ABAS[(Math.max(i, 0) + +b.dataset.passo + ABAS.length) % ABAS.length].id);
+  });
+
+  Sync.on('aba', marcar);   // outra tela/controle trocou
+  Sync.on('status', st => {
+    const c = document.getElementById('con');
+    const ok = st === 'SUBSCRIBED';
+    c.classList.toggle('ok', ok);
+    c.querySelector('span').innerHTML = (ok ? 'conectado' : 'reconectando…') + `<br>sala ${Sync.sala}`;
+  });
+}
+</script>
+</body>
+</html>

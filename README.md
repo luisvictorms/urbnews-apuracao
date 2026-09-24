@@ -12,3 +12,11 @@ Tela de apuração 1920×1080 para o vMix (Web Browser input). Dados direto do T
 - `?dicas=1` mostra os números das teclas nas abas
 - `?rodizio=10` troca de aba sozinho a cada 10 s
 - `?fed=XXX&est=YYY` força os códigos das eleições do TSE (se a descoberta automática falhar)
+
+## Controle pelo celular / TV touch
+Acrescente `?sala=CÓDIGO` (código secreto combinado com a equipe) em todas as telas:
+- Tela (vMix / TV): `index.html?sala=CÓDIGO`
+- Celular/tablet: `controle.html?sala=CÓDIGO`
+
+Tocar numa aba, no mapa ou no celular troca todas as telas da mesma sala (Supabase Realtime, projeto `urbnews-apuracao`).
+Sem `?sala=` a tela funciona sozinha, só com teclado/toque local.

@@ -94,6 +94,10 @@
   .abas span.on { background: var(--acc); border-color: var(--acc); color: #fff; }
   .abas span kbd { font: inherit; opacity: .6; margin-right: 6px; }
 
+  /* toque (TV touch) */
+  .abas span, #mapa .uf path, .pino { cursor: pointer; }
+  #mapa .uf path.nosso:hover { fill: #c3c8ee; }
+
   /* troca de aba */
   #painel.saindo .troca { opacity: 0; transform: translateY(-14px); }
   .troca { transition: opacity .25s, transform .25s; }
@@ -124,6 +128,8 @@
 </div>
 
 <script src="brasil.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="sync.js"></script>
 <script>
 /* ======================= configuração ======================= */
 const Q = new URLSearchParams(location.search);
@@ -298,7 +304,7 @@ function render(trocouAba) {
   document.getElementById('secoesbar').style.width = (res ? res.secoes : 0) + '%';
   document.getElementById('fonte').textContent = res ? `Fonte: TSE · Última consulta às ${res.consulta}` : 'Fonte: TSE';
   document.getElementById('abas').innerHTML = ABAS.map((a, i) =>
-    `<span class="${i === atual ? 'on' : ''}">${DICAS ? `<kbd>${i}</kbd>` : ''}${a.id === 'br' ? 'BRASIL' : a.id.toUpperCase()}</span>`).join('');
+    `<span data-i="${i}" class="${i === atual ? 'on' : ''}">${DICAS ? `<kbd>${i}</kbd>` : ''}${a.id === 'br' ? 'BRASIL' : a.id.toUpperCase()}</span>`).join('');
   // candidatos
   const box = document.getElementById('cands');
   if (!res || !res.cands.length) {
@@ -343,10 +349,11 @@ function render(trocouAba) {
   }
 }
 
-function irPara(i) {
+function irPara(i, remoto) {
   i = (i + ABAS.length) % ABAS.length;
   if (i === atual) return;
   atual = i;
+  if (!remoto && window.Sync) Sync.enviar(ABAS[i].id);
   history.replaceState(null, '', '#' + ABAS[i].id);
   const p = document.getElementById('painel');
   p.classList.add('saindo');
@@ -371,6 +378,23 @@ addEventListener('hashchange', () => {
   const i = ABAS.findIndex(a => a.id === location.hash.slice(1));
   if (i >= 0) irPara(i);
 });
+
+/* ======================= toque + sincronização ======================= */
+document.getElementById('abas').addEventListener('click', e => {
+  const el = e.target.closest('[data-i]'); if (el) irPara(+el.dataset.i);
+});
+document.getElementById('mapa').addEventListener('click', e => {
+  const pino = e.target.closest('.pino');
+  if (pino) return irPara(ABAS.findIndex(a => 'pino-' + a.id === pino.id));
+  const uf = e.target.closest('path[id^="uf-"]');
+  if (!uf) return;
+  const id = Object.keys(NOSSOS).find(k => 'uf-' + NOSSOS[k] === uf.id);
+  irPara(id ? ABAS.findIndex(a => a.id === id) : 0);   // outro estado = Brasil/Presidente
+});
+if (window.Sync) {
+  Sync.on('aba', id => { const i = ABAS.findIndex(a => a.id === id); if (i >= 0) irPara(i, true); });
+  Sync.on('ola', () => Sync.enviar(ABAS[atual].id));
+}
 
 /* ======================= escala ======================= */
 function escala() {
