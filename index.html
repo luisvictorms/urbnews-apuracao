@@ -185,8 +185,11 @@ const fint = n => n.toLocaleString('pt-BR');
 const fpct = x => x.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const dec = s => { const t = document.createElement('textarea'); t.innerHTML = s || ''; t.innerHTML = t.value; return t.value.trim(); };
 const MINUSC = new Set(['de', 'da', 'do', 'das', 'dos', 'e']);
-const nomeBonito = s => dec(s).toLowerCase().split(/\s+/)
-  .map((w, i) => (i && MINUSC.has(w)) ? w : w.replace(/(^|[-'])(\p{L})/gu, (m, a, b) => a + b.toUpperCase())).join(' ');
+// siglas (PT, AJ…) e a sigla do partido ficam em maiúsculas
+const nomeBonito = (s, sigla = '') => dec(s).toLowerCase().split(/\s+/)
+  .map((w, i) => (i && MINUSC.has(w)) ? w
+    : ((w.length <= 2 && !/[aeiouáéíóúâêôãõ]$/.test(w)) || w === sigla.toLowerCase()) ? w.toUpperCase()
+    : w.replace(/(^|[-'])(\p{L})/gu, (m, a, b) => a + b.toUpperCase())).join(' ');
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
 function eleDe(aba, turno) { return (codigos[turno] || {})[aba.cargo === 1 ? 'federal' : 'estadual']; }
@@ -271,7 +274,7 @@ function resultado(aba) {
   if (!d) return null;
   const raw = d.raw;
   const cands = [...raw.cand].sort((a, b) => num(b.vap) - num(a.vap) || num(a.seq) - num(b.seq)).map(c => ({
-    sq: c.sqcand, nome: nomeBonito(c.nm), numero: c.n, partido: dec(c.cc).split(' - ')[0].trim(),
+    sq: c.sqcand, nome: nomeBonito(c.nm, dec(c.cc).split(' - ')[0].trim()), numero: c.n, partido: dec(c.cc).split(' - ')[0].trim(),
     votos: num(c.vap), pct: pnum(c.pvap), st: dec(c.st).toUpperCase(), foto: urlFoto(aba, d.turno, c.sqcand),
   }));
   return { cands, secoes: pnum(raw.pst), consulta: new Date(d.ok).toLocaleTimeString('pt-BR'), turno: d.turno };
