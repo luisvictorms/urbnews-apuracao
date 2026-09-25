@@ -8,6 +8,48 @@ const _BN = (pct, nome = 'BRANCOS E NULOS') => ({ nome, pct, tipo: 'outro' });
 const _IND = pct => ({ nome: 'INDECISOS', pct, tipo: 'outro' });
 
 window.PESQUISAS = [
+  // ---------------- PRESIDENTE (BRASIL) ----------------
+  { id: 'datafolha-br-pres-2026-09-24', uf: 'br', creditoFotos: 'fotos: Wikimedia Commons (licenças Creative Commons)', instituto: 'DATAFOLHA', divulgacao: '24 DE SETEMBRO',
+    cargo: 'PRESIDENTE', local: 'BRASIL', turno: '1º TURNO', campo: '22 e 23/09/2026', entrevistas: '2.002',
+    margem: '2 pontos', confianca: '95%', contratante: 'FOLHA DE S.PAULO E GRUPO GLOBO', registro: 'BR-00304/2026',
+    fonteUrl: 'https://www.gazetadopovo.com.br/eleicoes/2026/pesquisa-eleitoral-2026/datafolha-presidente-setembro-2026-4/',
+    itens: [
+      { nome: 'LULA', partido: 'PT', pct: 40, foto: 'lula' },
+      { nome: 'FLÁVIO BOLSONARO', partido: 'PL', pct: 36, foto: 'flavio-bolsonaro' },
+      { nome: 'AUGUSTO CURY', partido: 'AVANTE', pct: 5, foto: 'augusto-cury' },
+      { nome: 'RONALDO CAIADO', partido: 'PSD', pct: 4, foto: 'ronaldo-caiado' },
+      { nome: 'RENAN SANTOS', partido: 'MISSÃO', pct: 3, foto: 'renan-santos' },
+      { nome: 'ROMEU ZEMA', partido: 'NOVO', pct: 1 },
+      { nome: 'SAMARA', partido: 'UP', pct: 1 },
+      { nome: 'LEONARDO AVALANCHE', partido: 'PRTB', pct: 0 },
+      { nome: 'CLARIANA BARÃO', partido: 'DC', pct: 0 },
+      { nome: 'EDMILSON COSTA', partido: 'PCB', pct: 0 },
+      { nome: 'HERTZ DIAS', partido: 'PSTU', pct: 0 },
+      { nome: 'RUI COSTA PIMENTA', partido: 'PCO', pct: 0 },
+      { nome: 'VETERINÁRIO WILSON GRASSI', partido: 'DEMOCRATA', pct: 0 },
+      _IND(2), _BN(5),
+    ] },
+  { id: 'quaest-br-pres-2026-09-21', uf: 'br', creditoFotos: 'fotos: Wikimedia Commons (licenças Creative Commons)', instituto: 'QUAEST', divulgacao: '21 DE SETEMBRO',
+    cargo: 'PRESIDENTE', local: 'BRASIL', turno: '1º TURNO', campo: '17 a 20/09/2026', entrevistas: '2.004',
+    margem: '2 pontos', confianca: '95%', contratante: 'EDITORA GLOBO E TV GLOBO', registro: 'BR-06004/2026',
+    fonteUrl: 'https://www.gazetadopovo.com.br/eleicoes/2026/pesquisa-eleitoral-2026/quaest-presidente-setembro-2026-4/',
+    itens: [
+      { nome: 'LULA', partido: 'PT', pct: 37, foto: 'lula' },
+      { nome: 'FLÁVIO BOLSONARO', partido: 'PL', pct: 33, foto: 'flavio-bolsonaro' },
+      { nome: 'AUGUSTO CURY', partido: 'AVANTE', pct: 6, foto: 'augusto-cury' },
+      { nome: 'RONALDO CAIADO', partido: 'PSD', pct: 4, foto: 'ronaldo-caiado' },
+      { nome: 'RENAN SANTOS', partido: 'MISSÃO', pct: 3, foto: 'renan-santos' },
+      { nome: 'ROMEU ZEMA', partido: 'NOVO', pct: 1 },
+      { nome: 'SAMARA', partido: 'UP', pct: 1 },
+      { nome: 'LEONARDO AVALANCHE', partido: 'PRTB', pct: 0 },
+      { nome: 'CLARIANA BARÃO', partido: 'DC', pct: 0 },
+      { nome: 'EDMILSON COSTA', partido: 'PCB', pct: 0 },
+      { nome: 'HERTZ DIAS', partido: 'PSTU', pct: 0 },
+      { nome: 'RUI COSTA PIMENTA', partido: 'PCO', pct: 0 },
+      { nome: 'VETERINÁRIO WILSON GRASSI', partido: 'DEMOCRATA', pct: 0 },
+      _IND(8), _BN(7),
+    ] },
+
   // ---------------- CEARÁ ----------------
   { id: 'datafolha-ce-gov-2026-09-25', uf: 'ce', instituto: 'DATAFOLHA', divulgacao: '25 DE SETEMBRO',
     cargo: 'GOVERNADOR', local: 'CEARÁ', turno: '1º TURNO', campo: '22 a 24/09/2026', entrevistas: '1.204',
