@@ -24,10 +24,20 @@ window.Exportar = (function () {
   const stage = () => document.getElementById('stage');
 
   // posiciona tudo no instante ms (desde o início da cena)
+  // devolve o que está se mexendo no instante: 'sim' (entradas/contagem/confete), 'lento' (só loops infinitos) ou 'parado'
   function posicionar(ms) {
     document.body.offsetWidth;                       // garante que animações novas existam
-    for (const a of document.getAnimations()) { a.pause(); a.currentTime = ms; }
-    if (window.__tick) window.__tick(ms);
+    let mexe = false, loop = false;
+    for (const a of document.getAnimations()) {
+      a.pause(); a.currentTime = ms;
+      const t = a.effect && a.effect.getTiming();
+      if (!t) continue;
+      if (t.iterations === Infinity) { loop = true; continue; }
+      const fim = (t.delay || 0) + (+t.duration || 0) * (t.iterations || 1);
+      if (ms <= fim + 40) mexe = true;
+    }
+    if (window.__tick && window.__tick(ms)) mexe = true;
+    return mexe ? 'sim' : loop ? 'lento' : 'parado';
   }
 
   // html-to-image não leva as cores do SVG que vêm do CSS: copia o estilo calculado para dentro do SVG
@@ -56,7 +66,6 @@ window.Exportar = (function () {
   }
 
   async function quadro(ms) {
-    posicionar(ms);
     const st = stage();
     return htmlToImage.toCanvas(st, {
       width: st.offsetWidth, height: st.offsetHeight, pixelRatio: 1, fontEmbedCSS: fontCSS,
@@ -65,6 +74,7 @@ window.Exportar = (function () {
 
   async function imagem(ms = 9900) {
     await preparar();
+    posicionar(ms);
     const cv = await quadro(ms);
     return new Promise(ok => cv.toBlob(ok, 'image/png'));
   }
@@ -80,9 +90,13 @@ window.Exportar = (function () {
     const enc = new VideoEncoder({ output: (c, m) => muxer.addVideoChunk(c, m), error: e => { erro = e; } });
     enc.configure(cfg);
     const total = Math.round(segundos * fps);
+    // só fotografa quando a imagem muda: movimento = todo quadro; loops lentos = 10/s; parado = reaproveita
+    let cv = null, ultimoMs = -1e9;
     for (let i = 0; i < total; i++) {
       if (erro) throw erro;
-      const cv = await quadro(i * 1000 / fps);
+      const ms = i * 1000 / fps;
+      const estado = posicionar(ms);
+      if (!cv || estado === 'sim' || (estado === 'lento' && ms - ultimoMs >= 99)) { cv = await quadro(ms); ultimoMs = ms; }
       const vf = new VideoFrame(cv, { timestamp: Math.round(i * 1e6 / fps), duration: Math.round(1e6 / fps) });
       enc.encode(vf, { keyFrame: i % (fps * 2) === 0 });
       vf.close();
