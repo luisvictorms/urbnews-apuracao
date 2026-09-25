@@ -75,6 +75,8 @@
     background: #0b2a33; display: grid; place-items: center; font-weight: 800; font-size: 120px; color: #2c5560;
     box-shadow: 0 0 34px rgba(174,253,4,.35), 0 30px 70px rgba(0,0,0,.55); position: relative;
     animation: brilho 2.6s ease-in-out 1.5s infinite; }
+  .mold img.ampliada { animation: nitido .6s ease-out; }
+  @keyframes nitido { from { filter: blur(3px); } }
   .mold img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%; }  /* moldura na proporção da foto do TSE: não corta */
   @keyframes brilho { 50% { box-shadow: 0 0 60px rgba(174,253,4,.6), 0 30px 70px rgba(0,0,0,.55); } }
   .rot { position: absolute; left: 50%; bottom: calc(var(--rot-h) * -0.26); transform: translateX(-50%);
@@ -124,6 +126,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="sync.js"></script>
 <script src="dados.js"></script>
+<script src="upscale.js"></script>
 <script>
 // Resultado: eleito(s) ou os dois do 2º turno da disputa escolhida (celular, teclado ou #aba); fica parado após a animação.
 // h = 1920x1080 · v = 1080x1920 (stories) · f = feed 1080x1350. ?numeros=0 esconde % e votos.
@@ -148,7 +151,7 @@ function titulos(aba, n) {
 }
 const ini = n => n.split(' ').map(w => w[0]).slice(0, 2).join('');
 const cartao = c => `<div class="cart"><div class="mold"><span>${esc(ini(c.nome))}</span>
-    <img src="${esc(c.foto)}" alt="" onerror="this.remove()"></div>
+    <img src="${esc(c.foto)}" data-up="${esc(c.foto)}" crossorigin="anonymous" alt="" onerror="this.remove()"></div>
   <div class="rot">${esc(c.nome)}</div>
   ${NUMEROS ? `<div class="num"><b><span class="conta" data-alvo="${c.pct}">0,00</span><small>%</small></b><span>${fint(c.votos)} votos</span></div>` : ''}</div>`;
 const logo = `<div class="logo"><img src="logo-2026.png" alt="urb.NEWS Eleições 2026"></div>`;
@@ -242,6 +245,7 @@ function mostrar(forcar) {
   cena.classList.add('saindo');
   setTimeout(() => {
     cena.innerHTML = montar(aba, d);
+    if (window.Upscale) Upscale.aplicar(cena);
     cena.classList.remove('saindo');
     caber(cena.querySelector('.tit'), stage.offsetWidth - 80);
     ajustarSub(cena.querySelector('.sub'));
@@ -262,6 +266,8 @@ window.aoAtualizar = () => {
   const r = resultado(DISPUTAS[atual]);
   document.getElementById('rod').textContent = r ? `Fonte: TSE · Última consulta às ${r.consulta}` : 'Fonte: TSE';
   mostrar(false);
+  // amplia antes as fotos das outras disputas já definidas (a atual primeiro)
+  if (window.Upscale) [DISPUTAS[atual], ...DISPUTAS].forEach(a => { const d = definida(a); if (d) d.cands.forEach(c => Upscale.melhorar(c.foto)); });
 };
 
 // 0/P = Presidente · 1..9 = governadores · Shift+n = senado · ← → navegam · R repete a animação
