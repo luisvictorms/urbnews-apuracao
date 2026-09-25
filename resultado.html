@@ -6,7 +6,7 @@
 <title>Resultado Urbnews</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Rethink+Sans:ital,wght@0,400..800;1,800&display=swap" rel="stylesheet">
+<link crossorigin="anonymous" href="https://fonts.googleapis.com/css2?family=Rethink+Sans:ital,wght@0,400..800;1,800&display=swap" rel="stylesheet">
 <style>
   /* layout do PSD "ARTE ELEIÇÕES GANHADORES - FEED E STORYS" */
   :root { --bg: #07252d; --bg2: #011218; --acc: #aefd04; --escuro: #012128; --etq: #0f2f38; --tx: #fff; --mut: #9fb8bf; }
@@ -124,6 +124,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="sync.js"></script>
 <script src="dados.js"></script>
+<script src="exportar.js"></script>
 <script>
 // Resultado: eleito(s) ou os dois do 2º turno da disputa escolhida (celular, teclado ou #aba); fica parado após a animação.
 // h = 1920x1080 · v = 1080x1920 (stories) · f = feed 1080x1350. ?numeros=0 esconde % e votos.
@@ -178,41 +179,47 @@ function ajustarSub(el) {
   void el.offsetWidth; el.style.animation = '';
 }
 
-function contar() {
-  document.querySelectorAll('.conta').forEach(el => {
-    const alvo = +el.dataset.alvo, t0 = performance.now() + 1100, dur = 1400;
-    const passo = t => {
-      const p = Math.min(1, Math.max(0, (t - t0) / dur));
-      el.textContent = fpct(alvo * (1 - Math.pow(1 - p, 3)));
-      if (p < 1) requestAnimationFrame(passo);
-    };
-    requestAnimationFrame(passo);
-  });
+/* ---------- contagem e confete como função do tempo (ms desde o início da cena) ---------- */
+// assim o estúdio consegue gerar qualquer quadro do vídeo; ao vivo, um loop chama __tick com o relógio real
+const cv = document.getElementById('confete'), cx = cv.getContext('2d');
+let comConfete = false, inicioCena = 0, loop = null;
+const CORES = ['#aefd04', '#ffffff', '#90d62c', '#c9c6ca', '#dfff8a'];
+function aleatorio(i, k) { const x = Math.sin(i * 127.1 + k * 311.7) * 43758.5453; return x - Math.floor(x); }
+
+function desenharConfete(ms) {
+  const W = cv.width = stage.offsetWidth, H = cv.height = stage.offsetHeight;
+  cx.clearRect(0, 0, W, H);
+  const n = (ms - 900) / 1000 * 60;                 // quadros de física (60/s) desde o disparo
+  if (!comConfete || n < 0) return false;
+  let vivos = 0;
+  for (let i = 0; i < 200; i++) {
+    const x0 = W * (.15 + aleatorio(i, 1) * .7), y0 = -20 - aleatorio(i, 2) * 300;
+    const vx = (aleatorio(i, 3) - .5) * 9, vy = 2 + aleatorio(i, 4) * 6;
+    const x = x0 + vx * (1 - Math.pow(.99, n)) / .01, y = y0 + vy * n + .06 * n * (n + 1);
+    if (y > H + 40) continue;
+    vivos++;
+    const r = aleatorio(i, 5) * 6 + (aleatorio(i, 6) - .5) * .3 * n;
+    const w = 10 + aleatorio(i, 7) * 12, h = 6 + aleatorio(i, 8) * 8;
+    cx.save(); cx.translate(x, y); cx.rotate(r); cx.scale(1, Math.cos(r * 2));
+    cx.fillStyle = CORES[i % CORES.length]; cx.fillRect(-w / 2, -h / 2, w, h); cx.restore();
+  }
+  return vivos > 0;
 }
 
-/* ---------- confete ---------- */
-const cv = document.getElementById('confete'), cx = cv.getContext('2d');
-let parts = [], animando = false;
-function confete() {
-  cv.width = stage.offsetWidth; cv.height = stage.offsetHeight;
-  const cores = ['#aefd04', '#ffffff', '#90d62c', '#c9c6ca', '#dfff8a'];
-  const W = cv.width;
-  for (let i = 0; i < 200; i++) parts.push({
-    x: W * (.15 + Math.random() * .7), y: -20 - Math.random() * 300, vx: (Math.random() - .5) * 9, vy: 2 + Math.random() * 6,
-    w: 10 + Math.random() * 12, h: 6 + Math.random() * 8, r: Math.random() * 6, vr: (Math.random() - .5) * .3,
-    c: cores[i % cores.length],
-  });
-  if (!animando) { animando = true; requestAnimationFrame(quadro); }
+function contagens(ms) {
+  const p = Math.min(1, Math.max(0, (ms - 1100) / 1400));
+  document.querySelectorAll('.conta').forEach(el => { el.textContent = fpct(+el.dataset.alvo * (1 - Math.pow(1 - p, 3))); });
+  return p < 1;
 }
-function quadro() {
-  cx.clearRect(0, 0, cv.width, cv.height);
-  parts = parts.filter(p => p.y < cv.height + 40);
-  for (const p of parts) {
-    p.vy += .12; p.vx *= .99; p.x += p.vx; p.y += p.vy; p.r += p.vr;
-    cx.save(); cx.translate(p.x, p.y); cx.rotate(p.r); cx.scale(1, Math.cos(p.r * 2));
-    cx.fillStyle = p.c; cx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); cx.restore();
-  }
-  if (parts.length) requestAnimationFrame(quadro); else { animando = false; cx.clearRect(0, 0, cv.width, cv.height); }
+
+window.__tick = ms => { const a = contagens(ms), b = desenharConfete(ms); return a || b; };
+
+function tocar() {                                   // relógio real (fora do estúdio)
+  cancelAnimationFrame(loop);
+  inicioCena = performance.now();
+  if (EXPORT) return;
+  const passo = () => { if (window.__tick(performance.now() - inicioCena)) loop = requestAnimationFrame(passo); };
+  loop = requestAnimationFrame(passo);
 }
 
 /* ---------- seleção (controle igual ao painel) ---------- */
@@ -238,16 +245,16 @@ function mostrar(forcar) {
   if (k === chaveAtual && !forcar) return;      // nada mudou: tela fica parada
   const tinha = !!chaveAtual;
   chaveAtual = k;
-  parts = [];                                   // confete da cena anterior não invade a próxima
   cena.classList.add('saindo');
   setTimeout(() => {
     cena.innerHTML = montar(aba, d);
     cena.classList.remove('saindo');
     caber(cena.querySelector('.tit'), stage.offsetWidth - 80);
     ajustarSub(cena.querySelector('.sub'));
-    contar();
-    if (d && d.tipo === 'eleito') setTimeout(confete, 900);
-  }, tinha ? 450 : 0);
+    comConfete = !!(d && d.tipo === 'eleito');
+    tocar();
+    if (EXPORT && d && !window.__exportPronto) { window.__exportPronto = true; Exportar.marcarPronto(); }
+  }, tinha && !EXPORT ? 450 : 0);
 }
 
 // escolher a mesma disputa de novo repete a animação
@@ -291,7 +298,7 @@ addEventListener('resize', escala);
 escala();
 mostrar(true);
 ciclo(DISPUTAS);
-setInterval(() => ciclo(DISPUTAS), SIM ? 5000 : 15000);
+if (!EXPORT) setInterval(() => ciclo(DISPUTAS), SIM ? 5000 : 15000);
 </script>
 </body>
 </html>

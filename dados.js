@@ -2,6 +2,7 @@
 /* ======================= configuração ======================= */
 const Q = new URLSearchParams(location.search);
 const SIM = Q.get('sim') === '1';
+const EXPORT = Q.get('export') === '1';   // estudio.html: página controlada quadro a quadro
 const SUBIR = Q.get('subir') === '1';   // simulação com apuração subindo (padrão: resultado final)
 const TURNO = +(Q.get('turno') || (new Date() >= new Date('2026-10-11T00:00:00-03:00') ? 2 : 1));
 const DICAS = Q.get('dicas') === '1';

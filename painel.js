@@ -2,6 +2,14 @@
 let atual = Math.max(0, ABAS.findIndex(a => a.id === (location.hash.slice(1) || Q.get('aba'))));
 let autoTimer = null;
 window.aoAtualizar = () => render(false);
+// export (estudio.html): congela os dados e recomeça a entrada assim que eles chegam
+if (EXPORT) window.aoAtualizar = () => {
+  if (!resultado(ABAS[atual]) || window.__exportPronto) return;
+  window.__exportPronto = true;
+  document.getElementById('cands').dataset.aba = '';
+  render(true);
+  Exportar.marcarPronto();
+};
 
 /* ======================= mapa ======================= */
 const NOSSOS = Object.fromEntries(GOV.map(uf => [uf, uf.toUpperCase()]));
@@ -66,11 +74,11 @@ function render(trocouAba) {
       : c.st === '2º TURNO' ? '<span class="st t2">2º TURNO</span>' : '';
     const ini = c.nome.split(' ').map(w => w[0]).slice(0, 2).join('');
     const [int, dc] = fpct(c.pct).split(',');
-    return `<div class="cand ${c.sq === liderSq ? 'lider' : ''}" data-sq="${c.sq}">
+    return `<div class="cand ${c.sq === liderSq ? 'lider' : ''}" data-sq="${c.sq}" style="--i:${lista.indexOf(c)}">
       <div class="foto"><img src="${esc(c.foto)}" alt="" onerror="this.remove()"><span>${esc(ini)}</span></div>
       <div><div class="nome">${esc(c.nome)}</div>
         <div class="part">${esc(c.partido)} · ${esc(c.numero)}${st}</div>
-        <div class="barra"><b data-w="${c.pct}"></b></div></div>
+        <div class="barra"><b style="width:${c.pct}%"></b></div></div>
       <div class="num"><div class="pct">${int}<small>,${dc}%</small></div><div class="votos">${fint(c.votos)} votos</div></div>
     </div>`;
   };
@@ -82,18 +90,14 @@ function render(trocouAba) {
       const el = box.children[i];
       const novo = document.createElement('div'); novo.innerHTML = html(c);
       const n = novo.firstElementChild;
-      el.className = n.className + ' in';
+      el.className = n.className;
       el.querySelector('.part').innerHTML = n.querySelector('.part').innerHTML;
       el.querySelector('.num').innerHTML = n.querySelector('.num').innerHTML;
       el.querySelector('.barra b').style.width = c.pct + '%';
     });
   } else {
     box.dataset.aba = aba.id;
-    box.innerHTML = lista.map(html).join('');
-    [...box.children].forEach((el, i) => setTimeout(() => {
-      el.classList.add('in');
-      const b = el.querySelector('.barra b'); b.style.width = b.dataset.w + '%';
-    }, 120 + i * 110));
+    box.innerHTML = lista.map(html).join('');   // entrada escalonada via CSS (animation-delay por --i)
   }
 }
 
@@ -156,5 +160,5 @@ escala();
 montarMapa();
 render(true);
 ciclo();
-setInterval(ciclo, SIM ? 3000 : 15000);
+if (!EXPORT) setInterval(ciclo, SIM ? 3000 : 15000);
 if (Q.get('rodizio')) autoTimer = setInterval(() => irPara(atual + 1), +Q.get('rodizio') * 1000);

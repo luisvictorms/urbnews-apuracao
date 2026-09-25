@@ -1,5 +1,7 @@
 # Apuração Urbnews · Eleições 2026
 
+**Estúdio:** `estudio.html` — todos os formatos num lugar só (apuração e vencedores × horizontal, stories, feed), escolha da disputa, simulação/TSE, e download do **vídeo de 10 s (MP4)** ou da **imagem final (PNG)**. Sem controle remoto. O vídeo é gerado quadro a quadro no navegador (Chrome/Edge, WebCodecs), ~30 s.
+
 Tela de apuração 1920×1080 para o vMix (Web Browser input). Dados direto do TSE (`resultados.tse.jus.br`), sem servidor.
 
 **Teclas:** `0`/`P` Presidente · `1`–`9` Governador AM PA MA PI CE AL SP RJ MG · `Shift`+número Senado do mesmo estado · `D` Dep. Federal CE · `E` Dep. Estadual CE · `←` `→` navegam · `A` rodízio automático.

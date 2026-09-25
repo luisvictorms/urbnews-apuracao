@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Estúdio · Eleições Urbnews</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rethink+Sans:wght@400..800&display=swap" rel="stylesheet">
+<style>
+  :root { --bg: #07252d; --bg2: #011218; --card: rgba(255,255,255,.05); --line: rgba(255,255,255,.12);
+    --acc: #aefd04; --escuro: #012128; --tx: #fff; --mut: #9fb8bf; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body { font-family: "Rethink Sans", sans-serif; color: var(--tx); background: var(--bg2) url(fundo.jpg) center / cover fixed;
+    display: grid; grid-template-columns: 380px 1fr; overflow: hidden; }
+  aside { height: 100vh; overflow-y: auto; padding: 24px 22px 30px; background: rgba(1,18,24,.72); border-right: 1px solid var(--line);
+    backdrop-filter: blur(6px); position: relative; z-index: 2; }
+  aside img.logo { width: 190px; display: block; }
+  h1 { font-size: 13px; letter-spacing: 4px; color: var(--mut); margin: 14px 0 22px; font-weight: 700; }
+  .rot { font-size: 12px; font-weight: 800; letter-spacing: 3px; color: var(--mut); margin: 18px 0 8px; }
+  .seg { display: grid; gap: 6px; }
+  .seg.c2 { grid-template-columns: 1fr 1fr; } .seg.c3 { grid-template-columns: 1fr 1fr 1fr; }
+  .seg button { font: inherit; color: var(--tx); background: var(--card); border: 1.5px solid var(--line); border-radius: 8px;
+    padding: 10px 8px; font-weight: 700; font-size: 14px; cursor: pointer; line-height: 1.2; }
+  .seg button small { display: block; font-weight: 500; font-size: 11px; color: var(--mut); margin-top: 2px; }
+  .seg button.on { background: var(--acc); border-color: var(--acc); color: var(--escuro); }
+  .seg button.on small { color: var(--escuro); }
+  select { width: 100%; font: inherit; font-weight: 700; font-size: 15px; color: var(--tx); background: var(--card);
+    border: 1.5px solid var(--line); border-radius: 8px; padding: 11px 10px; }
+  select option, select optgroup { background: #07252d; color: #fff; }
+  .acoes { display: grid; gap: 8px; margin-top: 24px; }
+  .acoes button, .acoes a { font: inherit; font-weight: 800; font-size: 15px; padding: 13px; border-radius: 8px; cursor: pointer;
+    text-align: center; text-decoration: none; border: 1.5px solid var(--line); background: var(--card); color: var(--tx); }
+  .acoes .prim { background: var(--acc); border-color: var(--acc); color: var(--escuro); }
+  .acoes button:disabled { opacity: .45; cursor: wait; }
+  .prog { margin-top: 14px; display: none; }
+  .prog.on { display: block; }
+  .prog .trilho { height: 8px; border-radius: 4px; background: var(--line); overflow: hidden; }
+  .prog .trilho b { display: block; height: 100%; width: 0; background: var(--acc); transition: width .2s; }
+  .prog p { font-size: 13px; color: var(--mut); margin-top: 8px; }
+  .msg { font-size: 13px; line-height: 1.45; margin-top: 12px; color: var(--mut); }
+  .msg.erro { color: #ff8a80; }
+  main { position: relative; display: grid; place-items: center; padding: 28px; min-width: 0; }
+  .quadro { position: relative; background: #000; box-shadow: 0 30px 80px rgba(0,0,0,.55); border-radius: 6px; overflow: hidden; }
+  .quadro iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  .dim { position: absolute; left: 28px; top: 20px; font-size: 12px; letter-spacing: 2px; color: var(--mut); font-weight: 700; }
+  /* iframe usado na exportação: tamanho real, atrás da interface */
+  #exp { position: fixed; left: 0; top: 0; border: 0; z-index: -1; pointer-events: none; }
+  @media (max-width: 900px) { body { grid-template-columns: 1fr; overflow: auto; } aside { height: auto; } main { min-height: 70vh; } }
+</style>
+</head>
+<body>
+<aside>
+  <img class="logo" src="logo-2026.png" alt="urb.NEWS Eleições 2026">
+  <h1>ESTÚDIO DE ARTES</h1>
+
+  <div class="rot">TIPO</div>
+  <div class="seg c2" id="tipo">
+    <button data-v="apuracao">Apuração<small>tempo real</small></button>
+    <button data-v="resultado">Vencedores<small>eleito / 2º turno</small></button>
+  </div>
+
+  <div class="rot">FORMATO</div>
+  <div class="seg c3" id="formato">
+    <button data-v="h">Horizontal<small>1920×1080</small></button>
+    <button data-v="v">Stories<small>1080×1920</small></button>
+    <button data-v="f">Feed<small>1080×1350</small></button>
+  </div>
+
+  <div class="rot">DISPUTA</div>
+  <select id="disputa"></select>
+
+  <div class="rot">DADOS</div>
+  <div class="seg c2" id="fonte">
+    <button data-v="tse">TSE ao vivo</button>
+    <button data-v="sim">Simulação 2022</button>
+  </div>
+  <div class="rot">TURNO</div>
+  <div class="seg c3" id="turno">
+    <button data-v="">Automático</button>
+    <button data-v="1">1º turno</button>
+    <button data-v="2">2º turno</button>
+  </div>
+
+  <div class="acoes">
+    <button class="prim" id="bVideo">⬇ Baixar vídeo · 10 s (MP4)</button>
+    <button id="bImg">⬇ Baixar imagem final (PNG)</button>
+    <button id="bRep">↻ Repetir animação</button>
+    <a id="bAbrir" target="_blank" rel="noopener">↗ Abrir em tela cheia (link p/ vMix)</a>
+  </div>
+  <div class="prog" id="prog"><div class="trilho"><b></b></div><p></p></div>
+  <div class="msg" id="msg">O vídeo é gerado quadro a quadro no navegador (Chrome ou Edge) e leva cerca de 1 minuto.</div>
+</aside>
+
+<main>
+  <div class="dim" id="dim"></div>
+  <div class="quadro" id="quadro"><iframe id="prev" title="Pré-visualização"></iframe></div>
+</main>
+
+<script src="dados.js"></script>
+<script>
+// Estúdio: escolhe tipo/formato/disputa, mostra a prévia e exporta vídeo (10 s) ou o quadro final.
+const TAM = { h: [1920, 1080], v: [1080, 1920], f: [1080, 1350] };
+const NOME_FMT = { h: 'horizontal', v: 'stories', f: 'feed' };
+const est = { tipo: 'resultado', formato: 'f', disputa: 'br', fonte: 'sim', turno: '' };
+try { Object.assign(est, JSON.parse(localStorage.getItem('estudio') || '{}')); } catch (e) {}
+const $ = id => document.getElementById(id);
+
+function urlDe(extra = {}) {
+  const q = new URLSearchParams();
+  if (est.fonte === 'sim') q.set('sim', '1');
+  if (est.turno) q.set('turno', est.turno);
+  let pag;
+  if (est.tipo === 'resultado') { pag = 'resultado.html'; if (est.formato !== 'h') q.set('formato', est.formato === 'v' ? 'vertical' : 'feed'); }
+  else pag = { h: 'index.html', v: 'vertical.html', f: 'feed.html' }[est.formato];
+  for (const [k, v] of Object.entries(extra)) q.set(k, v);
+  const qs = q.toString();
+  return `${pag}${qs ? '?' + qs : ''}#${est.disputa}`;
+}
+
+function montarDisputas() {
+  const sel = $('disputa');
+  const lista = ABAS.filter(a => est.tipo === 'apuracao' || !a.lista);
+  if (!lista.some(a => a.id === est.disputa)) est.disputa = lista[0].id;
+  sel.innerHTML = Object.keys(GRUPOS).map(g => {
+    const itens = lista.filter(a => a.grupo === g);
+    if (!itens.length) return '';
+    const ops = itens.map(a => `<option value="${a.id}">${a.id === 'br' ? 'Presidente · Brasil' : a.titulo.charAt(0) + a.titulo.slice(1).toLowerCase() + ' · ' + a.local}</option>`).join('');
+    return g === 'pres' ? ops : `<optgroup label="${GRUPOS[g]}">${ops}</optgroup>`;
+  }).join('');
+  sel.value = est.disputa;
+}
+
+function atualizar() {
+  try { localStorage.setItem('estudio', JSON.stringify(est)); } catch (e) {}
+  for (const k of ['tipo', 'formato', 'fonte', 'turno'])
+    $(k).querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.v === est[k]));
+  montarDisputas();
+  const u = urlDe();
+  $('prev').src = u;
+  $('bAbrir').href = u;
+  encaixar();
+}
+
+function encaixar() {
+  const [W, H] = TAM[est.formato];
+  const area = document.querySelector('main').getBoundingClientRect();
+  const s = Math.min((area.width - 56) / W, (area.height - 70) / H);
+  $('quadro').style.width = W * s + 'px';
+  $('quadro').style.height = H * s + 'px';
+  $('dim').textContent = `${NOME_FMT[est.formato].toUpperCase()} · ${W}×${H}`;
+}
+
+for (const k of ['tipo', 'formato', 'fonte', 'turno'])
+  $(k).addEventListener('click', e => { const b = e.target.closest('button'); if (b) { est[k] = b.dataset.v; atualizar(); } });
+$('disputa').addEventListener('change', e => { est.disputa = e.target.value; atualizar(); });
+$('bRep').addEventListener('click', () => { $('prev').src = 'about:blank'; setTimeout(() => { $('prev').src = urlDe(); }, 50); });
+addEventListener('resize', encaixar);
+
+/* ---------- exportação ---------- */
+function mensagem(txt, erro) { $('msg').textContent = txt; $('msg').classList.toggle('erro', !!erro); }
+function progresso(p, txt) {
+  $('prog').classList.toggle('on', p !== null);
+  if (p !== null) { $('prog').querySelector('b').style.width = Math.round(p * 100) + '%'; $('prog').querySelector('p').textContent = txt; }
+}
+function ocupado(sim) { ['bVideo', 'bImg', 'bRep'].forEach(id => { $(id).disabled = sim; }); }
+
+// carrega a página em tamanho real com ?export=1 e espera os dados chegarem
+async function abrirExport() {
+  $('exp')?.remove();
+  const [W, H] = TAM[est.formato];
+  const f = document.createElement('iframe');
+  f.id = 'exp'; f.style.width = W + 'px'; f.style.height = H + 'px';
+  document.body.appendChild(f);
+  await new Promise(ok => { f.onload = ok; f.src = urlDe({ export: '1' }); });
+  const w = f.contentWindow;
+  const semDados = new Promise((_, erro) => setTimeout(() => erro(new Error(
+    est.tipo === 'resultado' ? 'esta disputa ainda não tem eleito nem 2º turno definido.' : 'o TSE ainda não publicou dados desta disputa.')), 25000));
+  await Promise.race([w.Exportar.aguardar(), semDados]);
+  return w;
+}
+
+function nomeArquivo(ext) {
+  const a = ABAS.find(x => x.id === est.disputa);
+  const disp = a.id === 'br' ? 'presidente' : `${a.titulo.toLowerCase().replace(/\s+/g, '-')}-${a.abr}`;
+  return `urbnews-${est.tipo === 'resultado' ? 'vencedores' : 'apuracao'}-${NOME_FMT[est.formato]}-${disp}${est.fonte === 'sim' ? '-simulacao' : ''}.${ext}`;
+}
+function baixar(blob, nome) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = nome;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 60000);
+}
+
+async function exportar(tipo) {
+  ocupado(true); mensagem('');
+  progresso(0, 'Preparando a arte…');
+  try {
+    const w = await abrirExport();
+    const blob = tipo === 'video'
+      ? await w.Exportar.video({ segundos: 10, fps: 30, progresso: p => progresso(p, `Gerando vídeo… ${Math.round(p * 100)}%`) })
+      : await w.Exportar.imagem(9900);
+    baixar(blob, nomeArquivo(tipo === 'video' ? 'mp4' : 'png'));
+    mensagem(tipo === 'video' ? 'Vídeo pronto (10 s, 30 fps, MP4).' : 'Imagem pronta (quadro final, PNG).');
+  } catch (e) {
+    console.error(e);
+    mensagem('Não deu para exportar: ' + (e.message || e), true);
+  } finally {
+    progresso(null); ocupado(false);
+    $('exp')?.remove();
+  }
+}
+$('bVideo').addEventListener('click', () => exportar('video'));
+$('bImg').addEventListener('click', () => exportar('imagem'));
+
+atualizar();
+</script>
+</body>
+</html>

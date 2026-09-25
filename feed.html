@@ -6,7 +6,7 @@
 <title>Apuração Urbnews · Feed</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Rethink+Sans:ital,wght@0,400..800;1,800&display=swap" rel="stylesheet">
+<link crossorigin="anonymous" href="https://fonts.googleapis.com/css2?family=Rethink+Sans:ital,wght@0,400..800;1,800&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg: #07252d; --bg2: #011218; --acc: #aefd04; --escuro: #012128; --tag: #c9c6ca;
@@ -63,8 +63,8 @@
   #cands { margin-top: 24px; display: flex; flex-direction: column; gap: 12px; }
   .cand { display: grid; grid-template-columns: 108px 1fr 210px; gap: 0 26px; align-items: center;
     background: rgba(255,255,255,.045); border-left: 6px solid transparent; padding: 12px 22px 12px 12px; border-radius: 4px;
-    opacity: 0; transform: translateX(40px); transition: opacity .45s, transform .45s cubic-bezier(.2,.8,.2,1); }
-  .cand.in { opacity: 1; transform: none; }
+    animation: candIn .45s cubic-bezier(.2,.8,.2,1) calc(120ms + var(--i, 0) * 110ms) backwards; }
+  @keyframes candIn { from { opacity: 0; transform: translateX(40px); } }
   .cand.lider { border-left-color: var(--acc); background: rgba(174,253,4,.10); }
   .foto { width: 108px; height: 108px; border-radius: 6px; overflow: hidden; background: #0e2630; display: grid; place-items: center;
     font-weight: 800; font-size: 44px; color: var(--mut); }
@@ -76,7 +76,9 @@
   .part .st.t2 { background: #fff; color: var(--bg); }
   .barra { margin-top: 12px; height: 12px; background: var(--line); border-radius: 6px; overflow: hidden; }
   .barra b { display: block; height: 100%; width: 0; background: rgba(255,255,255,.75); border-radius: 6px;
-    transition: width 1.2s cubic-bezier(.2,.8,.2,1); }
+    transition: width 1.2s cubic-bezier(.2,.8,.2,1);
+    animation: barraIn 1.2s cubic-bezier(.2,.8,.2,1) calc(120ms + var(--i, 0) * 110ms) backwards; }
+  @keyframes barraIn { from { width: 0; } }
   .lider .barra b { background: var(--acc); }
   .num { text-align: right; }
   .pct { font-weight: 900; font-size: 60px; line-height: 1; font-variant-numeric: tabular-nums; letter-spacing: -1px; }
@@ -227,6 +229,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="sync.js"></script>
 <script src="dados.js"></script>
+<script src="exportar.js"></script>
 <script src="painel.js"></script>
 </body>
 </html>
