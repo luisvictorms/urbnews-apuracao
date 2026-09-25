@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Apuração Urbnews · Feed</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #14313d; --bg2: #0d1f27; --acc: #00a2ff; --tag: #c9c6ca;
+    --tx: #ffffff; --mut: #9fb2bc; --line: rgba(255,255,255,.14);
+    --map: #7d86bd; --map-hi: #a9b0e0; --map-side: #3d4677;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 100%; height: 100%; background: #000; overflow: hidden; }
+  body { font-family: Montserrat, sans-serif; color: var(--tx); }
+
+  /* palco fixo 1920x1080, escalado para caber na janela */
+  #stage { position: absolute; left: 50%; top: 50%; width: 1920px; height: 1080px;
+    transform-origin: 0 0; overflow: hidden;
+    background:
+      repeating-linear-gradient(118deg, rgba(255,255,255,.018) 0 1px, transparent 1px 9px),
+      repeating-linear-gradient(28deg, rgba(255,255,255,.012) 0 1px, transparent 1px 13px),
+      radial-gradient(ellipse 90% 80% at 30% 35%, #21414e 0%, var(--bg) 45%, var(--bg2) 100%); }
+
+  /* ---------- marca ---------- */
+  .marca { position: absolute; left: 96px; top: 72px; width: 360px; }
+  .marca img { display: block; width: 100%; height: auto; }
+
+  /* ---------- mapa ---------- */
+  #mapa { position: absolute; left: 70px; top: 300px; width: 740px; height: 700px; overflow: visible; }
+  #mapa .extr path { fill: var(--map-side); }
+  #mapa .uf path { fill: var(--map); stroke: #c4c9ea; stroke-width: 1.1; stroke-linejoin: round;
+    transition: fill .5s, filter .5s; }
+  #mapa .uf path.nosso { fill: var(--map-hi); }
+  #mapa .uf path.ativo { fill: var(--acc); filter: drop-shadow(0 0 14px rgba(0,162,255,.8)); }
+  #mapa.todos .uf path { fill: #4f8fcf; }
+  #mapa.todos .uf path.nosso { fill: var(--acc); }
+  .pino > g { transition: transform .45s cubic-bezier(.3,1.6,.5,1); transform-origin: 0 0; }
+  .pino .gota { fill: #1b2733; stroke: #fff; stroke-width: 2.5; }
+  .pino .miolo { fill: #fff; }
+  .pino text { fill: #fff; font: 700 21px Montserrat; paint-order: stroke; stroke: rgba(10,25,32,.85); stroke-width: 5px; }
+  .pino.ativo > g { transform: scale(1.45); }
+  .pino.ativo .gota { fill: var(--acc); }
+
+  /* ---------- painel de resultados ---------- */
+  #painel { position: absolute; left: 870px; top: 72px; width: 960px; height: 940px; }
+  .sobre { display: flex; align-items: center; gap: 14px; font-weight: 600; font-size: 22px; letter-spacing: 4px; color: var(--mut); }
+  .sobre i { width: 6px; height: 30px; background: var(--acc); border-radius: 2px; }
+  .sobre .sim { background: #d29922; color: #000; letter-spacing: 1px; padding: 2px 10px; border-radius: 4px; font-size: 18px; font-weight: 800; }
+  h1 { margin-top: 14px; line-height: .95; }
+  h1 .cargo { display: block; font-weight: 300; font-size: 54px; letter-spacing: 2px; }
+  h1 .local { display: block; white-space: nowrap; font-weight: 900; font-size: 96px; letter-spacing: -1px; }
+
+  .apur { margin-top: 24px; display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 6px 20px; }
+  .apur .rot { font-weight: 600; font-size: 20px; letter-spacing: 3px; color: var(--mut); }
+  .apur .val { font-weight: 800; font-size: 40px; font-variant-numeric: tabular-nums; }
+  .apur .trilho { grid-column: 1 / -1; height: 8px; background: var(--line); border-radius: 4px; overflow: hidden; }
+  .apur .trilho b { display: block; height: 100%; width: 0; background: var(--acc); transition: width 1.2s cubic-bezier(.2,.8,.2,1); }
+
+  #cands { margin-top: 24px; display: flex; flex-direction: column; gap: 12px; }
+  .cand { display: grid; grid-template-columns: 108px 1fr 210px; gap: 0 26px; align-items: center;
+    background: rgba(255,255,255,.045); border-left: 6px solid transparent; padding: 12px 22px 12px 12px; border-radius: 4px;
+    opacity: 0; transform: translateX(40px); transition: opacity .45s, transform .45s cubic-bezier(.2,.8,.2,1); }
+  .cand.in { opacity: 1; transform: none; }
+  .cand.lider { border-left-color: var(--acc); background: rgba(0,162,255,.10); }
+  .foto { width: 108px; height: 108px; border-radius: 6px; overflow: hidden; background: #0e2630; display: grid; place-items: center;
+    font-weight: 800; font-size: 44px; color: var(--mut); }
+  .foto img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 20%; }
+  .nome { font-weight: 800; font-size: 40px; line-height: 1.05; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .part { font-weight: 500; font-size: 22px; color: var(--mut); margin-top: 4px; letter-spacing: 1px; }
+  .part .st { display: inline-block; margin-left: 12px; background: var(--acc); color: #fff; font-weight: 800; font-size: 18px;
+    letter-spacing: 2px; padding: 3px 10px; border-radius: 3px; vertical-align: 2px; }
+  .part .st.t2 { background: #fff; color: var(--bg); }
+  .barra { margin-top: 12px; height: 12px; background: var(--line); border-radius: 6px; overflow: hidden; }
+  .barra b { display: block; height: 100%; width: 0; background: rgba(255,255,255,.75); border-radius: 6px;
+    transition: width 1.2s cubic-bezier(.2,.8,.2,1); }
+  .lider .barra b { background: var(--acc); }
+  .num { text-align: right; }
+  .pct { font-weight: 900; font-size: 60px; line-height: 1; font-variant-numeric: tabular-nums; letter-spacing: -1px; }
+  .pct small { font-size: 32px; font-weight: 700; }
+  .votos { font-weight: 500; font-size: 21px; color: var(--mut); margin-top: 6px; font-variant-numeric: tabular-nums; }
+
+  /* deputados: 10 mais votados em 2 colunas */
+  #cands.mini { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 10px 12px; }
+  #cands.mini .cand { grid-template-columns: 72px minmax(0,1fr) auto; gap: 0 14px; padding: 8px 14px 8px 8px; }
+  #cands.mini .foto { width: 72px; height: 72px; font-size: 28px; }
+  #cands.mini .nome { font-size: 23px; }
+  #cands.mini .part { font-size: 16px; margin-top: 2px; }
+  #cands.mini .part .st { font-size: 13px; padding: 2px 7px; margin-left: 8px; }
+  #cands.mini .barra { display: none; }
+  #cands.mini .pct { font-size: 32px; }
+  #cands.mini .pct small { font-size: 20px; }
+  #cands.mini .votos { font-size: 15px; margin-top: 3px; white-space: nowrap; }
+  #cands.mini .num { white-space: nowrap; }
+
+  .vazio { font-weight: 500; font-size: 30px; color: var(--mut); padding: 40px 0; }
+
+  /* rodapé */
+  #rodape { position: absolute; left: 96px; right: 90px; bottom: 44px; display: flex; justify-content: space-between; align-items: center; }
+  .fonte { font-weight: 500; font-size: 17px; color: var(--mut); letter-spacing: 1px; }
+  .abas { display: flex; gap: 6px; }
+  .abas span { font-weight: 700; font-size: 15px; letter-spacing: 1px; padding: 6px 8px; border-radius: 4px;
+    color: var(--mut); border: 2px solid var(--line); transition: all .3s; }
+  .abas span.on { background: var(--acc); border-color: var(--acc); color: #fff; }
+  .abas span kbd { font: inherit; opacity: .6; margin-right: 6px; }
+  .abas .grp { display: flex; gap: 4px; align-items: center; }
+  .abas .grp + .grp { margin-left: 10px; }
+  .abas.dicas span { font-size: 13px; padding: 5px 6px; }
+  .abas em { white-space: nowrap; font-style: normal; font-weight: 700; font-size: 12px; letter-spacing: 2px; color: var(--mut); margin-right: 4px; }
+
+  /* toque (TV touch) */
+  .abas span, #mapa .uf path, .pino { cursor: pointer; }
+  #mapa .uf path.nosso:hover { fill: #c3c8ee; }
+
+  /* troca de aba */
+  #painel.saindo .troca { opacity: 0; transform: translateY(-14px); }
+  .troca { transition: opacity .25s, transform .25s; }
+
+  /* ================= VERTICAL 1080x1920 ================= */
+  #stage { width: 1080px; height: 1920px;
+    background:
+      repeating-linear-gradient(118deg, rgba(255,255,255,.018) 0 1px, transparent 1px 9px),
+      repeating-linear-gradient(28deg, rgba(255,255,255,.012) 0 1px, transparent 1px 13px),
+      radial-gradient(ellipse 100% 60% at 70% 12%, #21414e 0%, var(--bg) 45%, var(--bg2) 100%); }
+  .marca { left: 70px; top: 80px; width: 330px; }
+  #mapa { left: 540px; top: 40px; width: 470px; height: 450px; }
+  #mapa .uf path { stroke-width: 1.4; }
+  .pino text { font-size: 26px; }
+  #painel { left: 70px; top: 520px; width: 940px; height: 1260px; }
+  h1 .cargo { font-size: 58px; }
+  h1 .local { font-size: 118px; }
+  .apur { margin-top: 30px; }
+  .apur .val { font-size: 48px; }
+  #cands { margin-top: 34px; gap: 18px; }
+  .cand { grid-template-columns: 140px 1fr 230px; gap: 0 26px; padding: 16px 24px 16px 16px; }
+  .foto { width: 140px; height: 140px; }
+  .nome { font-size: 44px; }
+  .part { font-size: 24px; }
+  .pct { font-size: 68px; }
+  .pct small { font-size: 36px; }
+  .votos { font-size: 22px; }
+  /* deputados: 10 em uma coluna */
+  #cands.mini { grid-template-columns: minmax(0,1fr); gap: 8px; }
+  #cands.mini .cand { grid-template-columns: 64px minmax(0,1fr) auto; padding: 7px 18px 7px 7px; }
+  #cands.mini .foto { width: 64px; height: 64px; }
+  #cands.mini .nome { font-size: 28px; }
+  #cands.mini .part { font-size: 17px; }
+  #cands.mini .pct { font-size: 36px; }
+  #cands.mini .pct small { font-size: 22px; }
+  #cands.mini .votos { font-size: 16px; }
+  #rodape { left: 70px; right: 70px; bottom: 50px; flex-direction: column-reverse; align-items: stretch; gap: 16px; }
+  .fonte { text-align: center; }
+  .abas { flex-wrap: wrap; justify-content: center; gap: 8px; }
+  .abas span { font-size: 17px; padding: 7px 10px; }
+  .abas .grp { flex-wrap: wrap; justify-content: center; }
+  .abas .grp + .grp { margin-left: 0; }
+  .abas { flex-direction: column; align-items: center; gap: 10px; }
+
+  /* ================= FEED 1080x1350 (4:5) ================= */
+  #stage { height: 1350px;
+    background:
+      repeating-linear-gradient(118deg, rgba(255,255,255,.018) 0 1px, transparent 1px 9px),
+      repeating-linear-gradient(28deg, rgba(255,255,255,.012) 0 1px, transparent 1px 13px),
+      radial-gradient(ellipse 100% 70% at 70% 15%, #21414e 0%, var(--bg) 45%, var(--bg2) 100%); }
+  .marca { left: 60px; top: 60px; width: 280px; }
+  #mapa { left: 600px; top: 26px; width: 420px; height: 405px; }
+  #painel { left: 60px; top: 400px; width: 960px; height: 900px; }
+  .sobre { font-size: 20px; }
+  h1 { margin-top: 10px; }
+  h1 .cargo { font-size: 46px; }
+  h1 .local { font-size: 92px; }
+  .apur { margin-top: 20px; }
+  .apur .val { font-size: 40px; }
+  #cands { margin-top: 22px; gap: 12px; }
+  .cand { grid-template-columns: 110px 1fr 210px; gap: 0 24px; padding: 12px 22px 12px 12px; }
+  .foto { width: 110px; height: 110px; }
+  .nome { font-size: 40px; }
+  .part { font-size: 21px; }
+  .pct { font-size: 60px; }
+  .pct small { font-size: 32px; }
+  .votos { font-size: 20px; }
+  /* deputados: 10 em 2 colunas */
+  #cands.mini { grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 8px 10px; }
+  #cands.mini .cand { grid-template-columns: 60px minmax(0,1fr) auto; gap: 0 12px; padding: 8px 12px 8px 8px; }
+  #cands.mini .foto { width: 60px; height: 60px; }
+  #cands.mini .nome { font-size: 22px; }
+  #cands.mini .part { font-size: 14px; }
+  #cands.mini .part .st { font-size: 11px; padding: 2px 5px; margin-left: 6px; }
+  #cands.mini .pct { font-size: 30px; }
+  #cands.mini .pct small { font-size: 18px; }
+  #cands.mini .votos { font-size: 13px; }
+  /* no feed as abas ficam escondidas (controle pelo celular/teclado continua valendo) */
+  #rodape { bottom: 34px; }
+  .abas { display: none; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="marca"><img src="logo.png" alt="urb.NEWS Eleições 2026"></div>
+
+  <svg id="mapa" viewBox="-10 0 840 810"></svg>
+
+  <div id="painel">
+    <div class="troca">
+      <div class="sobre"><i></i><span id="sobre">APURAÇÃO · 1º TURNO</span><span id="simtag"></span></div>
+      <h1><span class="cargo" id="cargo">GOVERNADOR</span><span class="local" id="local">CEARÁ</span></h1>
+      <div class="apur">
+        <div class="rot">SEÇÕES APURADAS</div><div class="val" id="secoes">0,00%</div>
+        <div class="trilho"><b id="secoesbar"></b></div>
+      </div>
+    </div>
+    <div id="cands"></div>
+  </div>
+
+  <div id="rodape">
+    <div class="fonte" id="fonte">Fonte: TSE</div>
+    <div class="abas" id="abas"></div>
+  </div>
+</div>
+
+<script src="brasil.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="sync.js"></script>
+<script src="dados.js"></script>
+<script src="painel.js"></script>
+</body>
+</html>

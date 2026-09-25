@@ -156,6 +156,32 @@
     animation: ponto 1.2s ease-in-out infinite; }
   .espera i:nth-child(2) { animation-delay: .2s; } .espera i:nth-child(3) { animation-delay: .4s; }
   @keyframes ponto { 50% { transform: translateY(-14px); opacity: .4; } }
+
+  /* ================= FEED 1080x1350 ================= */
+  #stage.f { height: 1350px; }
+  .f .marca { top: 50px; width: 300px; }
+  .f .topo { top: 240px; } .f .topo .cargo { font-size: 40px; } .f .topo .local { font-size: 84px; }
+  .f .raios { top: calc(680px - 1200px); }
+  .f .n1 .venc { top: 450px; }
+  .f .n1 .foto { width: 380px; height: 440px; font-size: 110px; }
+  .f .n1 .selo { font-size: 56px; margin: -34px 0 22px; }
+  .f .n1 .nomeG { font-size: 72px; }
+  .f .n1 .partG { font-size: 28px; margin-top: 10px; }
+  .f .n1 .pctG { font-size: 110px; margin-top: 16px; } .f .n1 .pctG small { font-size: 54px; }
+  .f .n1 .votosG { font-size: 26px; }
+  .f .n2 .venc:nth-child(1) { top: 430px; } .f .n2 .venc:nth-child(2) { top: 830px; }
+  .f .n2 .foto { width: 270px; height: 330px; font-size: 80px; }
+  .f .n2 .selo { font-size: 36px; } .f .n2 .nomeG { font-size: 52px; }
+  .f .n2 .partG { font-size: 22px; } .f .n2 .pctG { font-size: 80px; } .f .n2 .pctG small { font-size: 40px; }
+  .f .n2 .votosG { font-size: 22px; }
+  .f .duelo { top: 420px; height: 800px; }
+  .f .lado { gap: 34px; padding: 0 40px; }
+  .f .lado .foto { width: 230px; height: 280px; }
+  .f .lado .nomeG { font-size: 50px; } .f .lado .pctG { font-size: 78px; } .f .lado .pctG small { font-size: 38px; }
+  .f .lado .partG, .f .lado .votosG { font-size: 21px; }
+  .f .vs { width: 140px; height: 140px; font-size: 78px; left: calc(50% - 70px); top: calc(420px + 400px - 70px); }
+  .f .faixa { top: 1244px; font-size: 26px; padding: 12px 32px; }
+  .f #rod { bottom: 18px; font-size: 16px; }
 </style>
 </head>
 <body>
@@ -171,10 +197,11 @@
 <script src="dados.js"></script>
 <script>
 // Resultado: eleito(s) ou os dois do 2º turno da disputa escolhida (celular, teclado ou #aba); fica parado após a animação.
-const FORMATO = Q.get('formato') === 'vertical' ? 'v' : 'h';
+// h = 1920x1080 · v = 1080x1920 · f = feed 1080x1350 (herda o vertical e ajusta)
+const FORMATO = { vertical: 'v', feed: 'f' }[Q.get('formato')] || 'h';
 const FIXA = location.hash.slice(1) || Q.get('aba');
 const stage = document.getElementById('stage');
-stage.className = FORMATO;
+stage.className = FORMATO === 'f' ? 'v f' : FORMATO;
 if (SIM) stage.insertAdjacentHTML('beforeend', '<div class="sim">SIMULAÇÃO 2022</div>');
 
 // deputados ficam de fora (dezenas de eleitos)
@@ -269,6 +296,7 @@ function mostrar(forcar) {
   if (k === chaveAtual && !forcar) return;      // nada mudou: tela fica parada
   const tinha = !!chaveAtual;
   chaveAtual = k;
+  parts = [];                                   // confete da cena anterior não invade a próxima
   cena.classList.add('saindo');
   setTimeout(() => {
     cena.innerHTML = d ? (d.tipo === 'eleito' ? cenaEleito(d) : cenaT2(d))

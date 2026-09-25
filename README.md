@@ -24,6 +24,9 @@ Sem `?sala=` a tela funciona sozinha, só com teclado/toque local.
 ## Vertical
 `vertical.html` — mesmo painel em 1080×1920, mesmas teclas e mesmo controle (`?sala=CÓDIGO`).
 
+## Feed (Instagram 1080×1350)
+`feed.html?sala=CÓDIGO` (apuração, sem as abas na tela) e `resultado.html?formato=feed&sala=CÓDIGO` (vencedores). Mesmo controle.
+
 ## Resultado
 `resultado.html` — eleito(s) ou os dois do 2º turno da disputa escolhida; depois da animação a tela fica parada.
 Controle igual ao painel, mas com sala própria para não trocar junto:
