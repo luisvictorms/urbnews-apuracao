@@ -6,16 +6,16 @@
 <title>Apuração Urbnews · Vertical</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Rethink+Sans:ital,wght@0,400..800;1,800&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #14313d; --bg2: #0d1f27; --acc: #00a2ff; --tag: #c9c6ca;
+    --bg: #07252d; --bg2: #011218; --acc: #aefd04; --escuro: #012128; --tag: #c9c6ca;
     --tx: #ffffff; --mut: #9fb2bc; --line: rgba(255,255,255,.14);
-    --map: #7d86bd; --map-hi: #a9b0e0; --map-side: #3d4677;
+    --map: #7d86bd; --map-hi: #a9b0e0; --map-side: #3d4677; --map-acc: #00a2ff;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { width: 100%; height: 100%; background: #000; overflow: hidden; }
-  body { font-family: Montserrat, sans-serif; color: var(--tx); }
+  body { font-family: "Rethink Sans", sans-serif; color: var(--tx); }
 
   /* palco fixo 1920x1080, escalado para caber na janela */
   #stage { position: absolute; left: 50%; top: 50%; width: 1920px; height: 1080px;
@@ -23,7 +23,7 @@
     background:
       repeating-linear-gradient(118deg, rgba(255,255,255,.018) 0 1px, transparent 1px 9px),
       repeating-linear-gradient(28deg, rgba(255,255,255,.012) 0 1px, transparent 1px 13px),
-      radial-gradient(ellipse 90% 80% at 30% 35%, #21414e 0%, var(--bg) 45%, var(--bg2) 100%); }
+      radial-gradient(ellipse 90% 80% at 30% 35%, #173541 0%, var(--bg) 45%, var(--bg2) 100%); }
 
   /* ---------- marca ---------- */
   .marca { position: absolute; left: 96px; top: 72px; width: 360px; }
@@ -35,15 +35,15 @@
   #mapa .uf path { fill: var(--map); stroke: #c4c9ea; stroke-width: 1.1; stroke-linejoin: round;
     transition: fill .5s, filter .5s; }
   #mapa .uf path.nosso { fill: var(--map-hi); }
-  #mapa .uf path.ativo { fill: var(--acc); filter: drop-shadow(0 0 14px rgba(0,162,255,.8)); }
+  #mapa .uf path.ativo { fill: var(--map-acc); filter: drop-shadow(0 0 14px rgba(0,162,255,.8)); }
   #mapa.todos .uf path { fill: #4f8fcf; }
-  #mapa.todos .uf path.nosso { fill: var(--acc); }
+  #mapa.todos .uf path.nosso { fill: var(--map-acc); }
   .pino > g { transition: transform .45s cubic-bezier(.3,1.6,.5,1); transform-origin: 0 0; }
   .pino .gota { fill: #1b2733; stroke: #fff; stroke-width: 2.5; }
   .pino .miolo { fill: #fff; }
-  .pino text { fill: #fff; font: 700 21px Montserrat; paint-order: stroke; stroke: rgba(10,25,32,.85); stroke-width: 5px; }
+  .pino text { fill: #fff; font: 700 21px "Rethink Sans"; paint-order: stroke; stroke: rgba(10,25,32,.85); stroke-width: 5px; }
   .pino.ativo > g { transform: scale(1.45); }
-  .pino.ativo .gota { fill: var(--acc); }
+  .pino.ativo .gota { fill: var(--map-acc); }
 
   /* ---------- painel de resultados ---------- */
   #painel { position: absolute; left: 870px; top: 72px; width: 960px; height: 940px; }
@@ -65,13 +65,13 @@
     background: rgba(255,255,255,.045); border-left: 6px solid transparent; padding: 12px 22px 12px 12px; border-radius: 4px;
     opacity: 0; transform: translateX(40px); transition: opacity .45s, transform .45s cubic-bezier(.2,.8,.2,1); }
   .cand.in { opacity: 1; transform: none; }
-  .cand.lider { border-left-color: var(--acc); background: rgba(0,162,255,.10); }
+  .cand.lider { border-left-color: var(--acc); background: rgba(174,253,4,.10); }
   .foto { width: 108px; height: 108px; border-radius: 6px; overflow: hidden; background: #0e2630; display: grid; place-items: center;
     font-weight: 800; font-size: 44px; color: var(--mut); }
   .foto img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 20%; }
   .nome { font-weight: 800; font-size: 40px; line-height: 1.05; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .part { font-weight: 500; font-size: 22px; color: var(--mut); margin-top: 4px; letter-spacing: 1px; }
-  .part .st { display: inline-block; margin-left: 12px; background: var(--acc); color: #fff; font-weight: 800; font-size: 18px;
+  .part .st { display: inline-block; margin-left: 12px; background: var(--acc); color: var(--escuro); font-weight: 800; font-size: 18px;
     letter-spacing: 2px; padding: 3px 10px; border-radius: 3px; vertical-align: 2px; }
   .part .st.t2 { background: #fff; color: var(--bg); }
   .barra { margin-top: 12px; height: 12px; background: var(--line); border-radius: 6px; overflow: hidden; }
@@ -104,7 +104,7 @@
   .abas { display: flex; gap: 6px; }
   .abas span { font-weight: 700; font-size: 15px; letter-spacing: 1px; padding: 6px 8px; border-radius: 4px;
     color: var(--mut); border: 2px solid var(--line); transition: all .3s; }
-  .abas span.on { background: var(--acc); border-color: var(--acc); color: #fff; }
+  .abas span.on { background: var(--acc); border-color: var(--acc); color: var(--escuro); }
   .abas span kbd { font: inherit; opacity: .6; margin-right: 6px; }
   .abas .grp { display: flex; gap: 4px; align-items: center; }
   .abas .grp + .grp { margin-left: 10px; }
@@ -124,7 +124,7 @@
     background:
       repeating-linear-gradient(118deg, rgba(255,255,255,.018) 0 1px, transparent 1px 9px),
       repeating-linear-gradient(28deg, rgba(255,255,255,.012) 0 1px, transparent 1px 13px),
-      radial-gradient(ellipse 100% 60% at 70% 12%, #21414e 0%, var(--bg) 45%, var(--bg2) 100%); }
+      radial-gradient(ellipse 100% 60% at 70% 12%, #173541 0%, var(--bg) 45%, var(--bg2) 100%); }
   .marca { left: 70px; top: 80px; width: 330px; }
   #mapa { left: 540px; top: 40px; width: 470px; height: 450px; }
   #mapa .uf path { stroke-width: 1.4; }
@@ -158,6 +158,8 @@
   .abas .grp { flex-wrap: wrap; justify-content: center; }
   .abas .grp + .grp { margin-left: 0; }
   .abas { flex-direction: column; align-items: center; gap: 10px; }
+  /* fundo texturizado do PSD da arte de eleições */
+  #stage { background: var(--bg2) url(fundo.jpg) center / cover no-repeat !important; }
 </style>
 </head>
 <body>

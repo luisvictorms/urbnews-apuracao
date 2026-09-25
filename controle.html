@@ -3,18 +3,18 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-<meta name="theme-color" content="#14313d">
+<meta name="theme-color" content="#07252d">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>Controle · Apuração Urbnews</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Rethink+Sans:ital,wght@0,400..800;1,800&display=swap" rel="stylesheet">
 <style>
-  :root { --bg: #14313d; --bg2: #0d1f27; --acc: #00a2ff; --tx: #fff; --mut: #9fb2bc; --card: rgba(255,255,255,.06); --line: rgba(255,255,255,.14); }
+  :root { --bg: #07252d; --bg2: #011218; --acc: #aefd04; --escuro: #012128; --tx: #fff; --mut: #9fb2bc; --card: rgba(255,255,255,.06); --line: rgba(255,255,255,.14); }
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   html, body { min-height: 100%; }
-  body { font-family: Montserrat, sans-serif; color: var(--tx); user-select: none;
-    background: radial-gradient(ellipse at 30% 0%, #21414e, var(--bg) 45%, var(--bg2));
+  body { font-family: "Rethink Sans", sans-serif; color: var(--tx); user-select: none;
+    background: radial-gradient(ellipse at 30% 0%, #173541, var(--bg) 45%, var(--bg2));
     padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom)); min-height: 100vh; }
   header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
   header img { height: 54px; }
@@ -31,8 +31,8 @@
   button.br { grid-column: 1 / -1; min-height: 88px; }
   button .sg { font-weight: 900; font-size: 34px; letter-spacing: -.5px; line-height: 1; }
   button .nm { font-weight: 600; font-size: 13px; color: var(--mut); letter-spacing: 1px; margin-top: 8px; }
-  button.on { background: var(--acc); border-color: var(--acc); }
-  button.on .nm { color: #fff; }
+  button.on { background: var(--acc); border-color: var(--acc); color: var(--escuro); }
+  button.on .nm { color: var(--escuro); }
   button.enviando { border-color: var(--acc); }
   .sec { margin: 18px 0 8px; font-size: 13px; font-weight: 700; letter-spacing: 3px; color: var(--mut); }
   .g-gov, .g-sen { grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
