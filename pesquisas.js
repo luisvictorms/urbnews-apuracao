@@ -1,30 +1,28 @@
-// Pesquisas de intenção de voto (estimulada). Números copiados da divulgação oficial — confira antes de publicar.
-// Legislação (Res. TSE 23.600/2019): toda divulgação precisa trazer instituto, período, entrevistas,
-// margem de erro, nível de confiança, contratante e nº de registro. A página mostra isso no rodapé.
-// tipo 'outro' = indecisos / brancos e nulos (foto genérica, sem partido).
+// Pesquisas de intenção de voto para governador (cenário estimulado, 1º turno).
+// Números copiados das divulgações oficiais (fontes em fonteUrl) — confira antes de publicar.
+// Legislação (Res. TSE 23.600/2019): a divulgação precisa trazer instituto, período, entrevistas,
+// margem de erro, nível de confiança, contratante e nº de registro — a página mostra no rodapé.
+// tipo 'outro' = indecisos / brancos e nulos / outros (ícone genérico, sem partido).
+// foto: nome do arquivo em fotos-pesquisa/ (sem foto = iniciais). Mais de 6 candidatos: os menores viram "OUTROS".
+const _BN = (pct, nome = 'BRANCOS E NULOS') => ({ nome, pct, tipo: 'outro' });
+const _IND = pct => ({ nome: 'INDECISOS', pct, tipo: 'outro' });
+
 window.PESQUISAS = [
-  {
-    id: 'datafolha-ce-gov-2026-09-25',
-    instituto: 'DATAFOLHA', divulgacao: '25 DE SETEMBRO',
-    cargo: 'GOVERNADOR', local: 'CEARÁ', turno: '1º TURNO',
-    campo: '22 a 24/09/2026', entrevistas: '1.204', margem: '3 pontos', confianca: '95%',
-    contratante: 'O POVO', registro: 'CE-00198/2026',
+  // ---------------- CEARÁ ----------------
+  { id: 'datafolha-ce-gov-2026-09-25', uf: 'ce', instituto: 'DATAFOLHA', divulgacao: '25 DE SETEMBRO',
+    cargo: 'GOVERNADOR', local: 'CEARÁ', turno: '1º TURNO', campo: '22 a 24/09/2026', entrevistas: '1.204',
+    margem: '3 pontos', confianca: '95%', contratante: 'O POVO', registro: 'CE-00198/2026',
     fonteUrl: 'https://www.opovo.com.br/noticias/politica/eleicoes/2026/09/25/pesquisa-datafolha-ceara-tem-ciro-e-elmano-em-empate-tecnico.html',
     itens: [
       { nome: 'CIRO GOMES', partido: 'PSDB', pct: 44, foto: 'ciro' },
       { nome: 'ELMANO DE FREITAS', partido: 'PT', pct: 43, foto: 'elmano' },
       { nome: 'VERA LÚCIA', partido: 'NOVO', pct: 1, foto: 'vera' },
       { nome: 'DELEGADO HUGGO', partido: 'MISSÃO', pct: 1, foto: 'huggo' },
-      { nome: 'INDECISOS', pct: 5, tipo: 'outro' },
-      { nome: 'BRANCOS E NULOS', pct: 6, tipo: 'outro' },
-    ],
-  },
-  {
-    id: 'quaest-ce-gov-2026-09-23',
-    instituto: 'QUAEST', divulgacao: '23 DE SETEMBRO',
-    cargo: 'GOVERNADOR', local: 'CEARÁ', turno: '1º TURNO',
-    campo: '19 a 22/09/2026', entrevistas: '900', margem: '3 pontos', confianca: '95%',
-    contratante: 'TV VERDES MARES', registro: 'CE-08268/2026',
+      _IND(5), _BN(6),
+    ] },
+  { id: 'quaest-ce-gov-2026-09-23', uf: 'ce', instituto: 'QUAEST', divulgacao: '23 DE SETEMBRO',
+    cargo: 'GOVERNADOR', local: 'CEARÁ', turno: '1º TURNO', campo: '19 a 22/09/2026', entrevistas: '900',
+    margem: '3 pontos', confianca: '95%', contratante: 'TV VERDES MARES', registro: 'CE-08268/2026',
     fonteUrl: 'https://www.opovo.com.br/noticias/politica/eleicoes/2026/09/23/pesquisa-quaest-tem-empate-tecnico-entre-ciro-e-elmano.html',
     itens: [
       { nome: 'CIRO GOMES', partido: 'PSDB', pct: 43, foto: 'ciro' },
@@ -33,8 +31,181 @@ window.PESQUISAS = [
       { nome: 'VERA LÚCIA', partido: 'NOVO', pct: 1, foto: 'vera' },
       { nome: 'DANILO SOARES', partido: 'DEMOCRATA', pct: 0, foto: 'danilo' },
       { nome: 'SERLEY LEAL', partido: 'UP', pct: 0, foto: 'serley' },
-      { nome: 'INDECISOS', pct: 8, tipo: 'outro' },
-      { nome: 'BRANCOS E NULOS', pct: 6, tipo: 'outro' },
-    ],
-  },
+      _IND(8), _BN(6),
+    ] },
+
+  // ---------------- SÃO PAULO ----------------
+  { id: 'datafolha-sp-gov-2026-09-24', uf: 'sp', creditoFotos: 'fotos: Wikimedia Commons e TSE (licenças Creative Commons)', instituto: 'DATAFOLHA', divulgacao: '24 DE SETEMBRO',
+    cargo: 'GOVERNADOR', local: 'SÃO PAULO', turno: '1º TURNO', campo: '22 e 23/09/2026', entrevistas: '1.610',
+    margem: '2 pontos', confianca: '95%', contratante: 'FOLHA DA MANHÃ E TV GLOBO', registro: 'SP-03730/2026',
+    fonteUrl: 'https://www.gazetadopovo.com.br/eleicoes/2026/pesquisa-eleitoral-2026/datafolha-governador-sao-paulo-setembro-2026-2/',
+    itens: [
+      { nome: 'TARCÍSIO DE FREITAS', partido: 'REPUBLICANOS', pct: 50, foto: 'tarcisio-de-freitas' },
+      { nome: 'FERNANDO HADDAD', partido: 'PT', pct: 30, foto: 'fernando-haddad' },
+      { nome: 'POLICIAL EDJANE', partido: 'AGIR', pct: 2 },
+      { nome: 'CARLOS MACHADO', partido: 'PCB', pct: 2 },
+      { nome: 'VERA LÚCIA', partido: 'PSTU', pct: 2, foto: 'vera-lucia' },
+      { nome: 'VIVIAN MENDES', partido: 'UP', pct: 2 },
+      { nome: 'IZADORA DIAS', partido: 'PCO', pct: 1 },
+      _IND(3), _BN(8),
+    ] },
+  { id: 'quaest-sp-gov-2026-09-23', uf: 'sp', creditoFotos: 'fotos: Wikimedia Commons e TSE (licenças Creative Commons)', instituto: 'QUAEST', divulgacao: '23 DE SETEMBRO',
+    cargo: 'GOVERNADOR', local: 'SÃO PAULO', turno: '1º TURNO', campo: '19 a 22/09/2026', entrevistas: '1.800',
+    margem: '2 pontos', confianca: '95%', contratante: 'TV GLOBO', registro: 'SP-02456/2026',
+    fonteUrl: 'https://www.gazetadopovo.com.br/eleicoes/2026/pesquisa-eleitoral-2026/quaest-governador-sao-paulo-setembro-2026-2/',
+    itens: [
+      { nome: 'TARCÍSIO DE FREITAS', partido: 'REPUBLICANOS', pct: 44, foto: 'tarcisio-de-freitas' },
+      { nome: 'FERNANDO HADDAD', partido: 'PT', pct: 27, foto: 'fernando-haddad' },
+      { nome: 'POLICIAL EDJANE', partido: 'AGIR', pct: 1 },
+      { nome: 'VERA LÚCIA', partido: 'PSTU', pct: 1, foto: 'vera-lucia' },
+      { nome: 'CARLOS MACHADO', partido: 'PCB', pct: 1 },
+      { nome: 'IZADORA DIAS', partido: 'PCO', pct: 1 },
+      { nome: 'VIVIAN MENDES', partido: 'UP', pct: 0 },
+      _IND(11), _BN(14),
+    ] },
+
+  // ---------------- RIO DE JANEIRO ----------------
+  { id: 'datafolha-rj-gov-2026-09-24', uf: 'rj', creditoFotos: 'fotos: Wikimedia Commons e TSE (licenças Creative Commons)', instituto: 'DATAFOLHA', divulgacao: '24 DE SETEMBRO',
+    cargo: 'GOVERNADOR', local: 'RIO DE JANEIRO', turno: '1º TURNO', campo: '22 a 24/09/2026', entrevistas: '1.204',
+    margem: '3 pontos', confianca: '95%', contratante: 'FOLHA DE S. PAULO E TV GLOBO', registro: 'RJ-02205/2026',
+    fonteUrl: 'https://www.gazetadopovo.com.br/eleicoes/2026/pesquisa-eleitoral-2026/datafolha-governador-senador-rio-de-janeiro-setembro-2026-2/',
+    itens: [
+      { nome: 'EDUARDO PAES', partido: 'PSD', pct: 43, foto: 'eduardo-paes' },
+      { nome: 'DOUGLAS RUAS', partido: 'PL', pct: 30, foto: 'douglas-ruas' },
+      { nome: 'ANTHONY GAROTINHO', partido: 'REPUBLICANOS', pct: 8, foto: 'anthony-garotinho' },
+      { nome: 'WILLIAM SIRI', partido: 'PSOL', pct: 2 },
+      { nome: 'ANDRÉ MARINHO', partido: 'NOVO', pct: 2 },
+      { nome: 'CYRO GARCIA', partido: 'PSTU', pct: 2, foto: 'cyro-garcia' },
+      { nome: 'CORONEL BUSNELLO', partido: 'MISSÃO', pct: 2 },
+      { nome: 'JULIETE PANTOJA', partido: 'UP', pct: 1 },
+      { nome: 'LUAN MONTEIRO', partido: 'PCO', pct: 0 },
+      _IND(4), _BN(6),
+    ] },
+  { id: 'quaest-rj-gov-2026-09-23', uf: 'rj', creditoFotos: 'fotos: Wikimedia Commons e TSE (licenças Creative Commons)', instituto: 'QUAEST', divulgacao: '23 DE SETEMBRO',
+    cargo: 'GOVERNADOR', local: 'RIO DE JANEIRO', turno: '1º TURNO', campo: '19 a 22/09/2026', entrevistas: '1.302',
+    margem: '3 pontos', confianca: '95%', contratante: 'TV GLOBO', registro: 'RJ-04982/2026',
+    fonteUrl: 'https://www.gazetadopovo.com.br/eleicoes/2026/pesquisa-eleitoral-2026/quaest-governador-senador-rio-de-janeiro-setembro-2026-2/',
+    itens: [
+      { nome: 'EDUARDO PAES', partido: 'PSD', pct: 36, foto: 'eduardo-paes' },
+      { nome: 'DOUGLAS RUAS', partido: 'PL', pct: 23, foto: 'douglas-ruas' },
+      { nome: 'ANTHONY GAROTINHO', partido: 'REPUBLICANOS', pct: 8, foto: 'anthony-garotinho' },
+      { nome: 'CYRO GARCIA', partido: 'PSTU', pct: 1, foto: 'cyro-garcia' },
+      { nome: 'WILLIAM SIRI', partido: 'PSOL', pct: 1 },
+      { nome: 'CORONEL BUSNELLO', partido: 'MISSÃO', pct: 1 },
+      { nome: 'ANDRÉ MARINHO', partido: 'NOVO', pct: 1 },
+      { nome: 'JULIETE PANTOJA', partido: 'UP', pct: 1 },
+      { nome: 'LUAN MONTEIRO', partido: 'PCO', pct: 0 },
+      _IND(16), _BN(12),
+    ] },
+
+  // ---------------- MINAS GERAIS ----------------
+  { id: 'datafolha-mg-gov-2026-09-24', uf: 'mg', creditoFotos: 'fotos: Wikimedia Commons e TSE (licenças Creative Commons)', instituto: 'DATAFOLHA', divulgacao: '24 DE SETEMBRO',
+    cargo: 'GOVERNADOR', local: 'MINAS GERAIS', turno: '1º TURNO', campo: '22 a 24/09/2026', entrevistas: '1.204',
+    margem: '3 pontos', confianca: '95%', contratante: 'FOLHA DA MANHÃ E TV GLOBO', registro: 'MG-07400/2026',
+    fonteUrl: 'https://www.gazetadopovo.com.br/eleicoes/2026/pesquisa-eleitoral-2026/datafolha-governador-senador-minas-gerais-setembro-2026-2/',
+    itens: [
+      { nome: 'CLEITINHO', partido: 'REPUBLICANOS', pct: 40, foto: 'cleitinho' },
+      { nome: 'PATRUS ANANIAS', partido: 'PT', pct: 15, foto: 'patrus-ananias' },
+      { nome: 'ALEXANDRE KALIL', partido: 'PDT', pct: 9, foto: 'alexandre-kalil' },
+      { nome: 'MATEUS SIMÕES', partido: 'PSD', pct: 5, foto: 'mateus-simoes' },
+      { nome: 'FLÁVIO ROSCOE', partido: 'PL', pct: 5 },
+      { nome: 'GABRIEL', partido: 'MDB', pct: 3 },
+      { nome: 'PROFESSOR TÚLIO LOPES', partido: 'PCB', pct: 2 },
+      { nome: 'RAFAEL DUDA', partido: 'PSTU', pct: 1 },
+      { nome: 'BEN MENDES', partido: 'MISSÃO', pct: 1 },
+      { nome: 'HENRIQUE ÁREAS', partido: 'PCO', pct: 1 },
+      { nome: 'INDIRA XAVIER', partido: 'UP', pct: 1 },
+      _IND(10), _BN(9),
+    ] },
+  { id: 'quaest-mg-gov-2026-09-23', uf: 'mg', creditoFotos: 'fotos: Wikimedia Commons e TSE (licenças Creative Commons)', instituto: 'QUAEST', divulgacao: '23 DE SETEMBRO',
+    cargo: 'GOVERNADOR', local: 'MINAS GERAIS', turno: '1º TURNO', campo: '19 a 22/09/2026', entrevistas: '1.506',
+    margem: '3 pontos', confianca: '95%', contratante: 'TV GLOBO', registro: 'MG-03276/2026',
+    fonteUrl: 'https://www.gazetadopovo.com.br/eleicoes/2026/pesquisa-eleitoral-2026/quaest-governador-senador-minas-gerais-setembro-2026-2/',
+    itens: [
+      { nome: 'CLEITINHO', partido: 'REPUBLICANOS', pct: 37, foto: 'cleitinho' },
+      { nome: 'PATRUS ANANIAS', partido: 'PT', pct: 16, foto: 'patrus-ananias' },
+      { nome: 'ALEXANDRE KALIL', partido: 'PDT', pct: 8, foto: 'alexandre-kalil' },
+      { nome: 'MATEUS SIMÕES', partido: 'PSD', pct: 7, foto: 'mateus-simoes' },
+      { nome: 'FLÁVIO ROSCOE', partido: 'PL', pct: 5 },
+      { nome: 'GABRIEL', partido: 'MDB', pct: 2 },
+      { nome: 'BEN MENDES', partido: 'MISSÃO', pct: 1 },
+      { nome: 'PROFESSOR TÚLIO LOPES', partido: 'PCB', pct: 1 },
+      { nome: 'INDIRA XAVIER', partido: 'UP', pct: 0 },
+      { nome: 'HENRIQUE ÁREAS', partido: 'PCO', pct: 0 },
+      { nome: 'RAFAEL DUDA', partido: 'PSTU', pct: 0 },
+      _IND(16), _BN(7),
+    ] },
+
+  // ---------------- AMAZONAS ----------------
+  { id: 'quaest-am-gov-2026-09-24', uf: 'am', creditoFotos: 'fotos: Wikimedia Commons e TSE (licenças Creative Commons)', instituto: 'QUAEST', divulgacao: '24 DE SETEMBRO',
+    cargo: 'GOVERNADOR', local: 'AMAZONAS', turno: '1º TURNO', campo: '20 a 23/09/2026', entrevistas: '804',
+    margem: '3 pontos', confianca: '95%', contratante: 'REDE AMAZÔNICA', registro: 'AM-1856/2026',
+    fonteUrl: 'https://www.gazetadopovo.com.br/eleicoes/2026/pesquisa-eleitoral-2026/quaest-governador-senador-amazonas-setembro-2026/',
+    itens: [
+      { nome: 'OMAR AZIZ', partido: 'PSD', pct: 29, foto: 'omar-aziz' },
+      { nome: 'PROFESSORA MARIA DO CARMO', partido: 'PL', pct: 19, foto: 'professora-maria-do-carmo' },
+      { nome: 'ROBERTO CIDADE', partido: 'UNIÃO', pct: 18, foto: 'roberto-cidade' },
+      { nome: 'DAVID ALMEIDA', partido: 'AVANTE', pct: 11, foto: 'david-almeida' },
+      { nome: 'CABO DACIOLO', partido: 'MOBILIZA', pct: 2, foto: 'cabo-daciolo' },
+      { nome: 'ISAEL MUNDURUKU', partido: 'REDE', pct: 1 },
+      _IND(13), _BN(7),
+    ] },
+
+  // ---------------- PARÁ ----------------
+  { id: 'realtime-pa-gov-2026-09-15', uf: 'pa', creditoFotos: 'fotos: Wikimedia Commons e TSE (licenças Creative Commons)', instituto: 'REAL TIME BIG DATA', divulgacao: '15 DE SETEMBRO',
+    cargo: 'GOVERNADOR', local: 'PARÁ', turno: '1º TURNO', campo: '10 a 14/09/2026', entrevistas: '1.600',
+    margem: '2 pontos', confianca: '95%', contratante: 'REDE RECORD', registro: 'PA-00415/2026',
+    fonteUrl: 'https://www.gazetadopovo.com.br/eleicoes/2026/pesquisa-eleitoral-2026/real-time-big-data-governo-senado-para-setembro-2026/',
+    itens: [
+      { nome: 'HANA GHASSAN', partido: 'MDB', pct: 40, foto: 'hana-ghassan' },
+      { nome: 'DR. DANIEL', partido: 'PODEMOS', pct: 35, foto: 'dr-daniel' },
+      { nome: 'ARACELI', partido: 'PSOL', pct: 3, foto: 'araceli' },
+      { nome: 'OUTROS', pct: 1, tipo: 'outro' },
+      _IND(13), _BN(8),
+    ] },
+
+  // ---------------- MARANHÃO ----------------
+  { id: 'realtime-ma-gov-2026-09-10', uf: 'ma', creditoFotos: 'fotos: Wikimedia Commons e TSE (licenças Creative Commons)', instituto: 'REAL TIME BIG DATA', divulgacao: '10 DE SETEMBRO',
+    cargo: 'GOVERNADOR', local: 'MARANHÃO', turno: '1º TURNO', campo: '5 a 9/09/2026', entrevistas: '1.600',
+    margem: '2 pontos', confianca: '95%', contratante: 'NÃO INFORMADO NA DIVULGAÇÃO — CONFERIR', registro: 'MA-02569/2026',
+    fonteUrl: 'https://www.gazetadopovo.com.br/eleicoes/2026/pesquisa-eleitoral-2026/real-time-big-data-governador-senado-maranhao-setembro-2026/',
+    itens: [
+      { nome: 'EDUARDO BRAIDE', partido: 'PSD', pct: 45, foto: 'eduardo-braide' },
+      { nome: 'ORLEANS BRANDÃO', partido: 'MDB', pct: 32 },
+      { nome: 'FELIPE CAMARÃO', partido: 'PT', pct: 11, foto: 'felipe-camarao' },
+      { nome: 'ROBERTO ROCHA', partido: 'PRTB', pct: 5, foto: 'roberto-rocha' },
+      { nome: 'ANDRÉ LUIS', partido: 'MISSÃO', pct: 1 },
+      { nome: 'OUTROS', pct: 1, tipo: 'outro' },
+      _IND(3), _BN(2),
+    ] },
+
+  // ---------------- PIAUÍ ----------------
+  { id: 'datafolha-pi-gov-2026-09-17', uf: 'pi', creditoFotos: 'fotos: Wikimedia Commons e TSE (licenças Creative Commons)', instituto: 'DATAFOLHA', divulgacao: '17 DE SETEMBRO',
+    cargo: 'GOVERNADOR', local: 'PIAUÍ', turno: '1º TURNO', campo: '14 a 16/09/2026', entrevistas: '826',
+    margem: '3 pontos', confianca: '95%', contratante: 'TV RÁDIO CLUBE DE TERESINA', registro: 'PI-03643/2026',
+    fonteUrl: 'https://www.gazetadopovo.com.br/eleicoes/2026/pesquisa-eleitoral-2026/datafolha-governador-senador-piaui-setembro-2026/',
+    itens: [
+      { nome: 'RAFAEL FONTELES', partido: 'PT', pct: 55, foto: 'rafael-fonteles' },
+      { nome: 'JOEL RODRIGUES', partido: 'PP', pct: 25, foto: 'joel-rodrigues' },
+      { nome: 'LUCIA SANTOS', partido: 'PSDB', pct: 1 },
+      { nome: 'PROFESSOR JURITY', partido: 'DC', pct: 1 },
+      { nome: 'ELIZEU AGUIAR', partido: 'NOVO', pct: 1 },
+      { nome: 'PROFESSOR GISVALDO', partido: 'PSOL', pct: 1 },
+      { nome: 'SANTIAGO BELIZÁRIO', partido: 'UP', pct: 1 },
+      { nome: 'LOURDES MELO', partido: 'PCO', pct: 1 },
+      { nome: 'GERALDO CARVALHO', partido: 'PSTU', pct: 0 },
+      { nome: 'RAVENA DA INCLUSÃO', partido: 'DEMOCRATA', pct: 0 },
+      _IND(8), _BN(7),
+    ] },
+
+  // ---------------- ALAGOAS ----------------
+  { id: 'realtime-al-gov-2026-09-25', uf: 'al', creditoFotos: 'fotos: Wikimedia Commons e TSE (licenças Creative Commons)', instituto: 'REAL TIME BIG DATA', divulgacao: '25 DE SETEMBRO',
+    cargo: 'GOVERNADOR', local: 'ALAGOAS', turno: '1º TURNO', campo: '21 a 24/09/2026', entrevistas: '1.600',
+    margem: '2 pontos', confianca: '95%', contratante: 'REDE RECORD', registro: 'AL-06597/2026',
+    fonteUrl: 'https://www.poder360.com.br/poder-eleicoes-2026/renan-filho-e-jhc-empatam-em-1o-e-2o-turnos-em-alagoas/',
+    itens: [
+      { nome: 'RENAN FILHO', partido: 'MDB', pct: 47, foto: 'renan-filho' },
+      { nome: 'JHC', partido: 'PSDB', pct: 44, foto: 'jhc' },
+      _IND(4), _BN(5),
+    ] },
 ];

@@ -101,8 +101,8 @@
   <div class="quadro" id="quadro"><iframe id="prev" title="Pré-visualização"></iframe></div>
 </main>
 
-<script src="dados.js?v=20260926c"></script>
-<script src="pesquisas.js?v=20260926c"></script>
+<script src="dados.js?v=20260926d"></script>
+<script src="pesquisas.js?v=20260926d"></script>
 <script>
 // Estúdio: escolhe tipo/formato/disputa, mostra a prévia e exporta vídeo (10 s) ou o quadro final.
 const TAM = { h: [1920, 1080], v: [1080, 1920], f: [1080, 1350] };
@@ -111,7 +111,7 @@ const est = { tipo: 'resultado', formato: 'f', disputa: 'br', fonte: 'sim', turn
 try { Object.assign(est, JSON.parse(localStorage.getItem('estudio') || '{}')); } catch (e) {}
 const $ = id => document.getElementById(id);
 
-const VERSAO = '20260926c';   // muda a cada publicação: as telas nunca vêm do cache antigo
+const VERSAO = '20260926d';   // muda a cada publicação: as telas nunca vêm do cache antigo
 function urlDe(extra = {}) {
   const q = new URLSearchParams();
   q.set('v', VERSAO);
@@ -138,7 +138,9 @@ function montarDisputas() {
   $('blocoDados').style.display = pesq ? 'none' : '';
   if (pesq) {
     if (!PESQUISAS.some(p => p.id === est.pesquisa)) est.pesquisa = PESQUISAS[0].id;
-    sel.innerHTML = PESQUISAS.map(p => `<option value="${p.id}">${p.instituto} · ${p.cargo.charAt(0) + p.cargo.slice(1).toLowerCase()} ${p.local} · ${p.divulgacao.toLowerCase()}</option>`).join('');
+    const estados = [...new Set(PESQUISAS.map(p => p.local))];
+    sel.innerHTML = estados.map(uf => `<optgroup label="GOVERNADOR · ${uf}">${PESQUISAS.filter(p => p.local === uf)
+      .map(p => `<option value="${p.id}">${p.instituto} · ${p.divulgacao.toLowerCase()}</option>`).join('')}</optgroup>`).join('');
     sel.value = est.pesquisa;
     return;
   }

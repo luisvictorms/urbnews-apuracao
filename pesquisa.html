@@ -36,6 +36,8 @@
     animation: surge2 .5s both; }
   .foto { position: absolute; left: 0; right: 0; overflow: hidden; background: #fff; animation: foto .55s cubic-bezier(.3,1.4,.5,1) both; }
   .foto img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .foto .ini { width: 100%; height: 100%; display: grid; place-items: center; font-weight: 900; font-size: 52px; letter-spacing: 1px;
+    color: #fff; background: linear-gradient(160deg, #2c6488, #0f3a48); }
   @keyframes foto { from { opacity: 0; transform: translateY(24px) scale(.9); } }
   .nome { position: absolute; left: -30px; right: -30px; font-weight: 800; line-height: 1.05; text-transform: uppercase;
     animation: surge2 .5s both; }
@@ -52,8 +54,8 @@
 <body>
 <div id="stage"></div>
 
-<script src="pesquisas.js?v=20260926c"></script>
-<script src="exportar.js?v=20260926c"></script>
+<script src="pesquisas.js?v=20260926d"></script>
+<script src="exportar.js?v=20260926d"></script>
 <script>
 // Pesquisa: ?p=<id da pesquisa> · ?formato=vertical|feed (padrão horizontal) · ?export=1 (estúdio)
 const Q = new URLSearchParams(location.search);
@@ -92,17 +94,37 @@ function duasLinhas(nome) {
   return esc(w.slice(0, melhor).join(' ')) + '<br>' + esc(w.slice(melhor).join(' '));
 }
 
+// nomes longos ("PROFESSORA MARIA DO CARMO") diminuem para caber em 2 linhas
+function fsNome(nome) {
+  const maior = Math.max(...duasLinhas(nome).split('<br>').map(l => l.length));
+  return Math.round(Math.min(L.nomeFs, L.nomeFs * 13 / maior));
+}
+
 // tempos da animação de cada coluna (ms) — usados no CSS e na contagem dos números
 const T = i => ({ barra: 500 + i * 120, dur: 800 });
 
+// no máximo 8 barras: até 6 candidatos; acima disso, os menores somam em "OUTROS"
+function normalizar(itens) {
+  const cands = itens.filter(i => i.tipo !== 'outro');
+  const extras = itens.filter(i => i.tipo === 'outro');
+  if (cands.length <= 6) return itens;
+  const resto = cands.slice(5);
+  const outrosAntes = extras.find(i => i.nome === 'OUTROS');
+  const soma = resto.reduce((t, i) => t + i.pct, 0) + (outrosAntes ? outrosAntes.pct : 0);
+  return [...cands.slice(0, 5), { nome: 'OUTROS', pct: soma, tipo: 'outro' }, ...extras.filter(i => i !== outrosAntes)];
+}
+const ITENS = normalizar(P.itens);
+const iniciais = n => n.replace(/^(DR\.|PROFESSORA?|CORONEL|CABO|POLICIAL|DELEGADO)\s+/, '').split(' ')
+  .filter(w => !/^(DE|DA|DO|DOS|DAS|E)$/.test(w)).map(w => w[0]).slice(0, 2).join('');
+
 function montar() {
-  const max = Math.max(...P.itens.map(i => i.pct), 1);
+  const max = Math.max(...ITENS.map(i => i.pct), 1);
   const [tl, tt, tfs] = L.tit, [ft, fh, fw, fl, ffs] = L.faixa, [lt, lr, lw] = L.logo;
   let h = `<div class="titulo" style="left:${tl}px;top:${tt}px;font-size:${tfs}px">${esc(P.cargo)}</div>
     <div class="faixa" style="top:${ft}px;height:${fh}px;width:${fw}px;padding-left:${fl}px;font-size:${ffs}px">${esc(P.local)} - ${esc(P.turno)}</div>
     <div class="logo" style="top:${lt}px;right:${lr}px;width:${lw}px"><img src="logo.png" alt="urb.NEWS Eleições 2026"></div>`;
-  const n = P.itens.length;
-  P.itens.forEach((it, i) => {
+  const n = ITENS.length;
+  ITENS.forEach((it, i) => {
     const li = Math.min(Math.floor(i / L.porLinha), L.linhas.length - 1);
     const linha = L.linhas[li];
     const naLinha = Math.min(L.porLinha, n - li * L.porLinha);
@@ -114,18 +136,19 @@ function montar() {
     const topo = linha.base - bar;
     const t = T(i);
     const foto = it.tipo === 'outro' ? 'pessoa' : it.foto;
+    const imagem = foto ? `<img src="fotos-pesquisa/${esc(foto)}.jpg?v=1" alt="">` : `<div class="ini">${esc(iniciais(it.nome))}</div>`;
     h += `<div class="col" style="left:${x}px;top:0;width:${L.colW}px;height:${L.H}px">
       <div class="barra" style="top:${topo}px;bottom:${L.H - linha.base}px;animation-delay:${t.barra}ms"></div>
       <div class="foto" style="top:${topo - L.fotoH - 10}px;height:${L.fotoH}px;animation-delay:${t.barra + 350}ms">
-        <img src="fotos-pesquisa/${esc(foto)}.jpg?v=1" alt=""></div>
+        ${imagem}</div>
       <div class="pct conta" data-i="${i}" data-alvo="${it.pct}" style="top:${topo + 20}px;font-size:${L.pctFs}px;animation-delay:${t.barra}ms">${fmt(it.pct)}</div>
-      <div class="nome" style="top:${linha.base + 26}px;font-size:${L.nomeFs}px;animation-delay:${t.barra + 450}ms">${duasLinhas(it.nome)}</div>
+      <div class="nome" style="top:${linha.base + 26}px;font-size:${fsNome(it.nome)}px;animation-delay:${t.barra + 450}ms">${duasLinhas(it.nome)}</div>
       ${it.partido ? `<div class="part" style="top:${linha.base + 26 + L.nomeFs * 2.3}px;font-size:${L.partFs}px;animation-delay:${t.barra + 550}ms">${esc(it.partido)}</div>` : ''}
     </div>`;
   });
   const [fb, fr, ffz] = L.fonte, [lb, ll, lfz, lmax] = L.legal;
   h += `<div class="fonte" style="bottom:${fb}px;right:${fr}px;font-size:${ffz}px"><b>FONTE:</b> ${esc(P.instituto)} (${esc(P.divulgacao)})</div>
-    <div class="legal" style="bottom:${lb}px;left:${ll}px;font-size:${lfz}px;max-width:${lmax}px">Pesquisa ${esc(P.instituto.charAt(0) + P.instituto.slice(1).toLowerCase())} · registro ${esc(P.registro)} · ${esc(P.entrevistas)} entrevistas de ${esc(P.campo)} · margem de erro de ${esc(P.margem)} · confiança de ${esc(P.confianca)} · contratante: ${esc(P.contratante)}</div>`;
+    <div class="legal" style="bottom:${lb}px;left:${ll}px;font-size:${lfz}px;max-width:${lmax}px">Pesquisa ${esc(P.instituto.charAt(0) + P.instituto.slice(1).toLowerCase())} · registro ${esc(P.registro)} · ${esc(P.entrevistas)} entrevistas de ${esc(P.campo)} · margem de erro de ${esc(P.margem)} · confiança de ${esc(P.confianca)} · contratante: ${esc(P.contratante)}${P.creditoFotos ? ' · ' + esc(P.creditoFotos) : ''}</div>`;
   if (Q.get('sim') === '1') h += '<div class="sim">SIMULAÇÃO</div>';
   stage.innerHTML = h;
 }
