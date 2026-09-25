@@ -149,7 +149,7 @@
   @keyframes faixa { from { clip-path: inset(0 50% 0 50%); opacity: 0; } }
 
   /* aguardando */
-  .espera { position: absolute; left: 0; right: 0; top: 45%; text-align: center; transform: translateY(-50%); }
+  .espera { position: absolute; left: 0; right: 0; top: 55%; text-align: center; transform: translateY(-50%); }
   .espera h2 { font-weight: 900; font-size: 64px; letter-spacing: 1px; }
   .espera p { margin-top: 18px; font-weight: 500; font-size: 28px; color: var(--mut); }
   .espera i { display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: var(--acc); margin: 30px 8px 0;
@@ -166,32 +166,20 @@
   <div id="rod">Fonte: TSE</div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="sync.js"></script>
 <script src="dados.js"></script>
 <script>
-// Resultado: mostra só disputas definidas (eleitos ou os dois do 2º turno), em rodízio automático.
+// Resultado: eleito(s) ou os dois do 2º turno da disputa escolhida (celular, teclado ou #aba); fica parado após a animação.
 const FORMATO = Q.get('formato') === 'vertical' ? 'v' : 'h';
-const TEMPO = (+Q.get('tempo') || 12) * 1000;
 const FIXA = location.hash.slice(1) || Q.get('aba');
 const stage = document.getElementById('stage');
 stage.className = FORMATO;
 if (SIM) stage.insertAdjacentHTML('beforeend', '<div class="sim">SIMULAÇÃO 2022</div>');
 
 // deputados ficam de fora (dezenas de eleitos)
-const DISPUTAS = ABAS.filter(a => !a.lista && (!FIXA || a.id === FIXA));
+const DISPUTAS = ABAS.filter(a => !a.lista);
 const ehEleito = c => c.st.startsWith('ELEITO') || c.st === 'MATEMATICAMENTE ELEITO';
-
-function definidas() {
-  const out = [];
-  for (const aba of DISPUTAS) {
-    const r = resultado(aba);
-    if (!r) continue;
-    const eleitos = r.cands.filter(ehEleito);
-    const t2 = r.cands.filter(c => c.st === '2º TURNO');
-    if (eleitos.length) out.push({ aba, tipo: 'eleito', cands: eleitos.slice(0, 2), r });
-    else if (t2.length === 2) out.push({ aba, tipo: 't2', cands: t2, r });
-  }
-  return out;
-}
 
 /* ---------- cenas ---------- */
 const ini = n => n.split(' ').map(w => w[0]).slice(0, 2).join('');
@@ -258,41 +246,70 @@ function quadro() {
   if (parts.length) requestAnimationFrame(quadro); else { animando = false; cx.clearRect(0, 0, cv.width, cv.height); }
 }
 
-/* ---------- rodízio ---------- */
+/* ---------- seleção (controle igual ao painel) ---------- */
 const cena = document.getElementById('cena');
-let fila = [], pos = -1, chaveAtual = '', timer = null;
-const chave = d => d ? d.aba.id + d.tipo + d.cands.map(c => c.sq).join() : 'espera';
+let atual = Math.max(0, DISPUTAS.findIndex(a => a.id === FIXA));
+let chaveAtual = '';
 
-function mostrar(d) {
-  const k = chave(d);
-  if (k === chaveAtual) return;
+function definida(aba) {
+  const r = resultado(aba);
+  if (!r) return null;
+  const eleitos = r.cands.filter(ehEleito);
+  const t2 = r.cands.filter(c => c.st === '2º TURNO');
+  if (eleitos.length) return { aba, tipo: 'eleito', cands: eleitos.slice(0, 2), r };
+  if (t2.length === 2) return { aba, tipo: 't2', cands: t2, r };
+  return null;
+}
+const chave = (aba, d) => aba.id + (d ? d.tipo + d.cands.map(c => c.sq).join() : ':espera');
+
+function mostrar(forcar) {
+  const aba = DISPUTAS[atual];
+  const d = definida(aba);
+  const k = chave(aba, d);
+  if (k === chaveAtual && !forcar) return;      // nada mudou: tela fica parada
+  const tinha = !!chaveAtual;
   chaveAtual = k;
   cena.classList.add('saindo');
   setTimeout(() => {
     cena.innerHTML = d ? (d.tipo === 'eleito' ? cenaEleito(d) : cenaT2(d))
-      : `<div class="espera"><h2>AGUARDANDO DEFINIÇÕES</h2><p>Os eleitos e os confrontos de 2º turno aparecem aqui assim que o TSE confirmar.</p><i></i><i></i><i></i></div>`;
+      : `${topo(aba)}<div class="espera"><h2>AGUARDANDO DEFINIÇÃO</h2><p>A animação entra sozinha assim que o TSE confirmar o resultado.</p><i></i><i></i><i></i></div>`;
     cena.classList.remove('saindo');
     if (d) { contar(); if (d.tipo === 'eleito') setTimeout(confete, 1000); }
-  }, chaveAtual === k && cena.innerHTML ? 450 : 0);
+  }, tinha ? 450 : 0);
 }
 
-function proxima() {
-  fila = definidas();
-  if (!fila.length) return mostrar(null);
-  pos = (pos + 1) % fila.length;
-  mostrar(fila[pos]);
+// escolher a mesma disputa de novo repete a animação
+function selecionar(i, remoto) {
+  atual = (i + DISPUTAS.length) % DISPUTAS.length;
+  history.replaceState(null, '', '#' + DISPUTAS[atual].id);
+  if (!remoto && window.Sync) Sync.enviar(DISPUTAS[atual].id);
+  mostrar(true);
 }
 
 window.aoAtualizar = () => {
-  const n = definidas();
-  const r = n[0] && n[0].r;
+  const r = resultado(DISPUTAS[atual]);
   document.getElementById('rod').textContent = r ? `Fonte: TSE · Última consulta às ${r.consulta}` : 'Fonte: TSE';
-  if (!fila.length && n.length) { pos = -1; proxima(); }        // primeira definição: entra na hora
-  else if (!n.length) mostrar(null);
-  fila = n;
+  mostrar(false);
 };
 
-addEventListener('keydown', e => { if (e.key === 'ArrowRight' || e.key === ' ') proxima(); });
+// 0 = Presidente · 1..6 = governadores · 7 = Senado CE · ← → navegam · R repete a animação
+addEventListener('keydown', e => {
+  const k = e.key.toLowerCase();
+  if (/^[0-9]$/.test(k) && +k < DISPUTAS.length) selecionar(+k);
+  else if (k === 'p') selecionar(0);
+  else if (k === 'arrowright' || k === ' ') selecionar(atual + 1);
+  else if (k === 'arrowleft') selecionar(atual - 1);
+  else if (k === 'r') mostrar(true);
+});
+addEventListener('hashchange', () => {
+  const i = DISPUTAS.findIndex(a => a.id === location.hash.slice(1));
+  if (i >= 0 && i !== atual) selecionar(i, true);
+});
+if (window.Sync) {
+  Sync.on('aba', id => { const i = DISPUTAS.findIndex(a => a.id === id); if (i >= 0) selecionar(i, true); });
+  Sync.on('ola', () => Sync.enviar(DISPUTAS[atual].id));
+}
+if (Q.get('rodizio')) setInterval(() => selecionar(atual + 1), +Q.get('rodizio') * 1000);
 
 function escala() {
   const s = Math.min(innerWidth / stage.offsetWidth, innerHeight / stage.offsetHeight);
@@ -300,9 +317,9 @@ function escala() {
 }
 addEventListener('resize', escala);
 escala();
+mostrar(true);
 ciclo(DISPUTAS);
 setInterval(() => ciclo(DISPUTAS), SIM ? 5000 : 15000);
-timer = setInterval(() => { if (fila.length > 1) proxima(); }, TEMPO);
 </script>
 </body>
 </html>

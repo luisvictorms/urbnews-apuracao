@@ -51,7 +51,7 @@
   <div class="con" id="con"><i></i><span>conectando…</span></div>
 </header>
 <div id="app"></div>
-<footer>Toque numa disputa para colocá-la na tela</footer>
+<footer id="rodape">Toque numa disputa para colocá-la na tela</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="sync.js"></script>
@@ -68,10 +68,17 @@ const ABAS = [
   { id: 'df-ce', sg: 'DEP. FEDERAL', nm: 'CEARÁ', ce: 1 },
   { id: 'de-ce', sg: 'DEP. ESTADUAL', nm: 'CEARÁ', ce: 1 },
 ];
+// ?tipo=resultado: controla a página de resultado (sem deputados)
+const RESULTADO = new URLSearchParams(location.search).get('tipo') === 'resultado';
+if (RESULTADO) ABAS.splice(ABAS.findIndex(a => a.id === 'df-ce'), 2);
 const rotulo = a => a.id === 'br' ? 'PRESIDENTE · BRASIL' : a.ce ? a.sg + ' · CEARÁ' : 'GOVERNADOR · ' + a.nm;
 const app = document.getElementById('app');
 let atual = null;
 
+if (RESULTADO) {
+  document.title = 'Controle · Resultado Urbnews';
+  document.getElementById('rodape').textContent = 'Toque numa disputa para exibir o resultado · toque de novo para repetir a animação';
+}
 if (!window.Sync) {
   app.innerHTML = `<div class="aviso">Falta o código da sala no link.<br>Use o endereço completo, ex.: <code>controle.html?sala=CÓDIGO</code></div>`;
 } else {
