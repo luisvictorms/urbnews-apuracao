@@ -56,9 +56,10 @@
   <h1>ESTÚDIO DE ARTES</h1>
 
   <div class="rot">TIPO</div>
-  <div class="seg c2" id="tipo">
+  <div class="seg c3" id="tipo">
     <button data-v="apuracao">Apuração<small>tempo real</small></button>
     <button data-v="resultado">Vencedores<small>eleito / 2º turno</small></button>
+    <button data-v="pesquisa">Pesquisa<small>Quaest / Datafolha</small></button>
   </div>
 
   <div class="rot">FORMATO</div>
@@ -68,9 +69,10 @@
     <button data-v="f">Feed<small>1080×1350</small></button>
   </div>
 
-  <div class="rot">DISPUTA</div>
+  <div class="rot" id="rotDisputa">DISPUTA</div>
   <select id="disputa"></select>
 
+  <div id="blocoDados">
   <div class="rot">DADOS</div>
   <div class="seg c2" id="fonte">
     <button data-v="tse">TSE ao vivo</button>
@@ -81,6 +83,7 @@
     <button data-v="">Automático</button>
     <button data-v="1">1º turno</button>
     <button data-v="2">2º turno</button>
+  </div>
   </div>
 
   <div class="acoes">
@@ -98,22 +101,29 @@
   <div class="quadro" id="quadro"><iframe id="prev" title="Pré-visualização"></iframe></div>
 </main>
 
-<script src="dados.js?v=20260926b"></script>
+<script src="dados.js?v=20260926c"></script>
+<script src="pesquisas.js?v=20260926c"></script>
 <script>
 // Estúdio: escolhe tipo/formato/disputa, mostra a prévia e exporta vídeo (10 s) ou o quadro final.
 const TAM = { h: [1920, 1080], v: [1080, 1920], f: [1080, 1350] };
 const NOME_FMT = { h: 'horizontal', v: 'stories', f: 'feed' };
-const est = { tipo: 'resultado', formato: 'f', disputa: 'br', fonte: 'sim', turno: '' };
+const est = { tipo: 'resultado', formato: 'f', disputa: 'br', fonte: 'sim', turno: '', pesquisa: PESQUISAS[0].id };
 try { Object.assign(est, JSON.parse(localStorage.getItem('estudio') || '{}')); } catch (e) {}
 const $ = id => document.getElementById(id);
 
-const VERSAO = '20260926b';   // muda a cada publicação: as telas nunca vêm do cache antigo
+const VERSAO = '20260926c';   // muda a cada publicação: as telas nunca vêm do cache antigo
 function urlDe(extra = {}) {
   const q = new URLSearchParams();
   q.set('v', VERSAO);
   if (est.fonte === 'sim') q.set('sim', '1');
   if (est.turno) q.set('turno', est.turno);
   let pag;
+  if (est.tipo === 'pesquisa') {
+    const qp = new URLSearchParams({ v: VERSAO, p: est.pesquisa });
+    if (est.formato !== 'h') qp.set('formato', est.formato === 'v' ? 'vertical' : 'feed');
+    for (const [k, v] of Object.entries(extra)) qp.set(k, v);
+    return `pesquisa.html?${qp}`;
+  }
   if (est.tipo === 'resultado') { pag = 'resultado.html'; if (est.formato !== 'h') q.set('formato', est.formato === 'v' ? 'vertical' : 'feed'); }
   else { pag = { h: 'index.html', v: 'vertical.html', f: 'feed.html' }[est.formato]; q.set('abas', '0'); }
   for (const [k, v] of Object.entries(extra)) q.set(k, v);
@@ -123,6 +133,15 @@ function urlDe(extra = {}) {
 
 function montarDisputas() {
   const sel = $('disputa');
+  const pesq = est.tipo === 'pesquisa';
+  $('rotDisputa').textContent = pesq ? 'PESQUISA' : 'DISPUTA';
+  $('blocoDados').style.display = pesq ? 'none' : '';
+  if (pesq) {
+    if (!PESQUISAS.some(p => p.id === est.pesquisa)) est.pesquisa = PESQUISAS[0].id;
+    sel.innerHTML = PESQUISAS.map(p => `<option value="${p.id}">${p.instituto} · ${p.cargo.charAt(0) + p.cargo.slice(1).toLowerCase()} ${p.local} · ${p.divulgacao.toLowerCase()}</option>`).join('');
+    sel.value = est.pesquisa;
+    return;
+  }
   const lista = ABAS.filter(a => est.tipo === 'apuracao' || !a.lista);
   if (!lista.some(a => a.id === est.disputa)) est.disputa = lista[0].id;
   sel.innerHTML = Object.keys(GRUPOS).map(g => {
@@ -156,7 +175,7 @@ function encaixar() {
 
 for (const k of ['tipo', 'formato', 'fonte', 'turno'])
   $(k).addEventListener('click', e => { const b = e.target.closest('button'); if (b) { est[k] = b.dataset.v; atualizar(); } });
-$('disputa').addEventListener('change', e => { est.disputa = e.target.value; atualizar(); });
+$('disputa').addEventListener('change', e => { if (est.tipo === 'pesquisa') est.pesquisa = e.target.value; else est.disputa = e.target.value; atualizar(); });
 $('bRep').addEventListener('click', () => { $('prev').src = 'about:blank'; setTimeout(() => { $('prev').src = urlDe(); }, 50); });
 addEventListener('resize', encaixar);
 
@@ -184,6 +203,7 @@ async function abrirExport() {
 }
 
 function nomeArquivo(ext) {
+  if (est.tipo === 'pesquisa') return `urbnews-pesquisa-${est.pesquisa}-${NOME_FMT[est.formato]}.${ext}`;
   const a = ABAS.find(x => x.id === est.disputa);
   const disp = a.id === 'br' ? 'presidente' : `${a.titulo.toLowerCase().replace(/\s+/g, '-')}-${a.abr}`;
   return `urbnews-${est.tipo === 'resultado' ? 'vencedores' : 'apuracao'}-${NOME_FMT[est.formato]}-${disp}${est.fonte === 'sim' ? '-simulacao' : ''}.${ext}`;

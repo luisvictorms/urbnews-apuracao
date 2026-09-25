@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pesquisa Urbnews</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link crossorigin="anonymous" href="https://fonts.googleapis.com/css2?family=Figtree:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  /* layout do PSD "PESQUISA DATA FOLHA - CEARÁ" */
+  :root { --bg2: #011218; --tx: #fff; --mut: #9fb8bf; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 100%; height: 100%; background: #000; overflow: hidden; }
+  body { font-family: Figtree, sans-serif; color: var(--tx); }
+  #stage { position: absolute; left: 50%; top: 50%; transform-origin: 0 0; overflow: hidden;
+    background: var(--bg2) url(fundo.jpg) center / cover no-repeat; }
+
+  .titulo { position: absolute; font-weight: 700; line-height: 1; letter-spacing: -1px; text-transform: uppercase;
+    animation: entraEsq .7s cubic-bezier(.2,.8,.2,1) both; }
+  .faixa { position: absolute; left: 0; display: flex; align-items: center; font-weight: 800; text-transform: uppercase;
+    background: linear-gradient(90deg, rgba(20,48,60,.95) 0%, rgba(20,48,60,.85) 60%, rgba(20,48,60,0) 100%);
+    animation: faixa .7s cubic-bezier(.2,.8,.2,1) .25s both; }
+  .logo { position: absolute; animation: surge .7s .2s both; }
+  .logo img { display: block; width: 100%; }
+  @keyframes entraEsq { from { opacity: 0; transform: translateX(-60px); } }
+  @keyframes faixa { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+  @keyframes surge { from { opacity: 0; transform: translateY(-16px); } }
+
+  .col { position: absolute; text-align: center; }
+  .barra { position: absolute; left: 0; right: 0; bottom: 0; transform-origin: bottom;
+    background: linear-gradient(180deg, #2c6488 0%, #19566d 28%, #103d4b 65%, rgba(13,46,56,.35) 100%);
+    animation: cresce .8s cubic-bezier(.2,.8,.2,1) both; }
+  @keyframes cresce { from { transform: scaleY(0); } }
+  .pct { position: absolute; left: 0; right: 0; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums;
+    animation: surge2 .5s both; }
+  .foto { position: absolute; left: 0; right: 0; overflow: hidden; background: #fff; animation: foto .55s cubic-bezier(.3,1.4,.5,1) both; }
+  .foto img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  @keyframes foto { from { opacity: 0; transform: translateY(24px) scale(.9); } }
+  .nome { position: absolute; left: -30px; right: -30px; font-weight: 800; line-height: 1.05; text-transform: uppercase;
+    animation: surge2 .5s both; }
+  .part { position: absolute; left: -30px; right: -30px; font-weight: 500; text-transform: uppercase; color: #e6eef0;
+    animation: surge2 .5s both; }
+  @keyframes surge2 { from { opacity: 0; transform: translateY(12px); } }
+
+  .fonte { position: absolute; font-weight: 500; text-transform: uppercase; animation: surge .6s 1.4s both; white-space: nowrap; }
+  .fonte b { font-weight: 800; }
+  .legal { position: absolute; font-weight: 500; color: rgba(230,238,240,.7); line-height: 1.35; animation: surge .6s 1.5s both; }
+  .sim { position: absolute; right: 20px; top: 16px; background: #d29922; color: #000; font-weight: 800; font-size: 16px; padding: 3px 10px; border-radius: 4px; }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+
+<script src="pesquisas.js?v=20260926c"></script>
+<script src="exportar.js?v=20260926c"></script>
+<script>
+// Pesquisa: ?p=<id da pesquisa> · ?formato=vertical|feed (padrão horizontal) · ?export=1 (estúdio)
+const Q = new URLSearchParams(location.search);
+const EXPORT = Q.get('export') === '1';
+const P = PESQUISAS.find(p => p.id === (Q.get('p') || location.hash.slice(1))) || PESQUISAS[0];
+const FORMATO = { vertical: 'v', stories: 'v', feed: 'f' }[Q.get('formato')] || 'h';
+
+// medidas por formato (px do PSD no horizontal e no vertical)
+const L = {
+  h: { W: 1920, H: 1080, tit: [105, 78, 150, 1250], faixa: [232, 70, 700, 105, 40], logo: [80, 105, 400],
+       linhas: [{ base: 822, max: 292 }], porLinha: 99, x0: 104, x1: 1816, colW: 160, fotoH: 127, minBar: 72,
+       pctFs: 48, nomeFs: 26, partFs: 21, fonte: [36, 104, 22], legal: [36, 104, 15, 1150] },
+  v: { W: 1080, H: 1920, tit: [81, 50, 150, 918], faixa: [266, 70, 700, 81, 40], logo: [246, 108, 334],
+       linhas: [{ base: 981, max: 298 }, { base: 1506, max: 240 }], porLinha: 4, x0: 128, x1: 952, colW: 160, fotoH: 127, minBar: 72,
+       pctFs: 48, nomeFs: 26, partFs: 21, fonte: [40, 99, 22], legal: [86, 99, 15, 882] },
+  f: { W: 1080, H: 1350, tit: [70, 40, 130, 940], faixa: [196, 60, 600, 70, 34], logo: [176, 70, 250],
+       linhas: [{ base: 690, max: 230 }, { base: 1115, max: 170 }], porLinha: 4, x0: 110, x1: 970, colW: 150, fotoH: 119, minBar: 66,
+       pctFs: 44, nomeFs: 22, partFs: 18, fonte: [32, 70, 19], legal: [70, 70, 13, 940] },
+}[FORMATO];
+
+const stage = document.getElementById('stage');
+stage.style.width = L.W + 'px'; stage.style.height = L.H + 'px';
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const fmt = n => (Number.isInteger(n) ? String(n) : n.toFixed(1).replace('.', ',')) + '%';
+
+// quebra o nome em até 2 linhas equilibradas
+function duasLinhas(nome) {
+  const w = nome.split(' ');
+  if (w.length < 2) return esc(nome);
+  let melhor = 1, dif = 1e9;
+  for (let i = 1; i < w.length; i++) {
+    if (/^(DE|DA|DO|DOS|DAS|E)$/.test(w[i - 1])) continue;   // "ELMANO / DE FREITAS", "BRANCOS / E NULOS"
+    const d = Math.abs(w.slice(0, i).join(' ').length - w.slice(i).join(' ').length);
+    if (d < dif) { dif = d; melhor = i; }
+  }
+  return esc(w.slice(0, melhor).join(' ')) + '<br>' + esc(w.slice(melhor).join(' '));
+}
+
+// tempos da animação de cada coluna (ms) — usados no CSS e na contagem dos números
+const T = i => ({ barra: 500 + i * 120, dur: 800 });
+
+function montar() {
+  const max = Math.max(...P.itens.map(i => i.pct), 1);
+  const [tl, tt, tfs] = L.tit, [ft, fh, fw, fl, ffs] = L.faixa, [lt, lr, lw] = L.logo;
+  let h = `<div class="titulo" style="left:${tl}px;top:${tt}px;font-size:${tfs}px">${esc(P.cargo)}</div>
+    <div class="faixa" style="top:${ft}px;height:${fh}px;width:${fw}px;padding-left:${fl}px;font-size:${ffs}px">${esc(P.local)} - ${esc(P.turno)}</div>
+    <div class="logo" style="top:${lt}px;right:${lr}px;width:${lw}px"><img src="logo.png" alt="urb.NEWS Eleições 2026"></div>`;
+  const n = P.itens.length;
+  P.itens.forEach((it, i) => {
+    const li = Math.min(Math.floor(i / L.porLinha), L.linhas.length - 1);
+    const linha = L.linhas[li];
+    const naLinha = Math.min(L.porLinha, n - li * L.porLinha);
+    const k = i - li * L.porLinha;
+    const cols = L.porLinha === 99 ? n : L.porLinha;
+    const passo = cols > 1 ? (L.x1 - L.x0 - L.colW) / (cols - 1) : 0;
+    const x = L.x0 + k * passo;
+    const bar = Math.round(L.minBar + (it.pct / max) * (linha.max - L.minBar));
+    const topo = linha.base - bar;
+    const t = T(i);
+    const foto = it.tipo === 'outro' ? 'pessoa' : it.foto;
+    h += `<div class="col" style="left:${x}px;top:0;width:${L.colW}px;height:${L.H}px">
+      <div class="barra" style="top:${topo}px;bottom:${L.H - linha.base}px;animation-delay:${t.barra}ms"></div>
+      <div class="foto" style="top:${topo - L.fotoH - 10}px;height:${L.fotoH}px;animation-delay:${t.barra + 350}ms">
+        <img src="fotos-pesquisa/${esc(foto)}.jpg?v=1" alt=""></div>
+      <div class="pct conta" data-i="${i}" data-alvo="${it.pct}" style="top:${topo + 20}px;font-size:${L.pctFs}px;animation-delay:${t.barra}ms">${fmt(it.pct)}</div>
+      <div class="nome" style="top:${linha.base + 26}px;font-size:${L.nomeFs}px;animation-delay:${t.barra + 450}ms">${duasLinhas(it.nome)}</div>
+      ${it.partido ? `<div class="part" style="top:${linha.base + 26 + L.nomeFs * 2.3}px;font-size:${L.partFs}px;animation-delay:${t.barra + 550}ms">${esc(it.partido)}</div>` : ''}
+    </div>`;
+  });
+  const [fb, fr, ffz] = L.fonte, [lb, ll, lfz, lmax] = L.legal;
+  h += `<div class="fonte" style="bottom:${fb}px;right:${fr}px;font-size:${ffz}px"><b>FONTE:</b> ${esc(P.instituto)} (${esc(P.divulgacao)})</div>
+    <div class="legal" style="bottom:${lb}px;left:${ll}px;font-size:${lfz}px;max-width:${lmax}px">Pesquisa ${esc(P.instituto.charAt(0) + P.instituto.slice(1).toLowerCase())} · registro ${esc(P.registro)} · ${esc(P.entrevistas)} entrevistas de ${esc(P.campo)} · margem de erro de ${esc(P.margem)} · confiança de ${esc(P.confianca)} · contratante: ${esc(P.contratante)}</div>`;
+  if (Q.get('sim') === '1') h += '<div class="sim">SIMULAÇÃO</div>';
+  stage.innerHTML = h;
+}
+
+// título grande diminui até caber na largura do formato
+function ajustarTitulo() {
+  const el = stage.querySelector('.titulo');
+  el.style.animation = 'none';
+  let fs = L.tit[2];
+  const r = document.createRange();
+  const larg = () => { r.selectNodeContents(el); return r.getBoundingClientRect().width / (stage.getBoundingClientRect().width / L.W); };
+  while (larg() > L.tit[3] && fs > 60) { fs -= 4; el.style.fontSize = fs + 'px'; }
+  void el.offsetWidth; el.style.animation = '';
+}
+
+// números contam junto com a barra
+function contagens(ms) {
+  let ativo = false;
+  document.querySelectorAll('.conta').forEach(el => {
+    const t = T(+el.dataset.i), alvo = +el.dataset.alvo;
+    const p = Math.min(1, Math.max(0, (ms - t.barra) / t.dur));
+    if (p < 1) ativo = true;
+    el.textContent = fmt(Math.round(alvo * (1 - Math.pow(1 - p, 3)) * (Number.isInteger(alvo) ? 1 : 10)) / (Number.isInteger(alvo) ? 1 : 10));
+  });
+  return ativo;
+}
+window.__tick = contagens;
+
+function escala() {
+  const s = Math.min(innerWidth / L.W, innerHeight / L.H);
+  stage.style.transform = `scale(${s}) translate(-50%, -50%)`;
+}
+addEventListener('resize', escala);
+escala();
+montar();
+ajustarTitulo();
+document.title = `${P.instituto} · ${P.cargo} ${P.local}`;
+if (EXPORT) Exportar.marcarPronto();
+else {
+  const t0 = performance.now();
+  const loop = () => { if (contagens(performance.now() - t0)) requestAnimationFrame(loop); };
+  requestAnimationFrame(loop);
+}
+</script>
+</body>
+</html>

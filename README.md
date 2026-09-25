@@ -36,3 +36,8 @@ Controle igual ao painel, mas com sala própria para não trocar junto:
 - Celular: `controle.html?sala=CÓDIGO&tipo=resultado` (sem deputados; tocar de novo repete a animação)
 - Teclas: iguais ao painel (sem deputados) · `R` repete · `?rodizio=12` volta o rodízio automático
 
+
+## Pesquisas (Quaest / Datafolha)
+`pesquisa.html?p=<id>` (+ `&formato=vertical|feed`) — layout do PSD "PESQUISA DATA FOLHA - CEARÁ" (barras com foto, Figtree).
+Dados em `pesquisas.js` (copiados das divulgações oficiais, com os dados legais obrigatórios no rodapé); fotos em `fotos-pesquisa/`.
+Também aparece no estúdio como tipo **Pesquisa**, com vídeo e imagem.
