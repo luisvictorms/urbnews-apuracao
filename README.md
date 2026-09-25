@@ -34,7 +34,3 @@ Controle igual ao painel, mas com sala própria para não trocar junto:
 - Celular: `controle.html?sala=CÓDIGO&tipo=resultado` (sem deputados; tocar de novo repete a animação)
 - Teclas: iguais ao painel (sem deputados) · `R` repete · `?rodizio=12` volta o rodízio automático
 
-## Upscale das fotos (vencedores)
-`upscale.js` amplia 4× as fotos do TSE (161×225 → 644×900) no navegador com ESRGAN (UpscalerJS + TensorFlow.js, WebGL).
-A foto original aparece na hora e é trocada pela ampliada (~2 s por foto; a 1ª vez ~30–40 s para baixar o modelo e preparar a GPU).
-As fotos das outras disputas definidas são ampliadas antes, em segundo plano. `?upscale=0` desliga.
