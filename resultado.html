@@ -36,7 +36,7 @@
   /* cabeçalho da cena */
   .topo { position: absolute; z-index: 3; animation: desce .7s cubic-bezier(.2,.8,.2,1) both; }
   .topo .cargo { display: block; font-weight: 300; letter-spacing: 3px; }
-  .topo .local { display: block; font-weight: 900; line-height: .95; }
+  .topo .local { display: block; white-space: nowrap; font-weight: 900; line-height: .95; }
   .h .topo { right: 96px; top: 72px; text-align: right; }
   .h .topo .cargo { font-size: 44px; } .h .topo .local { font-size: 86px; }
   .v .topo { left: 0; right: 0; top: 330px; text-align: center; }
@@ -274,6 +274,8 @@ function mostrar(forcar) {
     cena.innerHTML = d ? (d.tipo === 'eleito' ? cenaEleito(d) : cenaT2(d))
       : `${topo(aba)}<div class="espera"><h2>AGUARDANDO DEFINIÇÃO</h2><p>A animação entra sozinha assim que o TSE confirmar o resultado.</p><i></i><i></i><i></i></div>`;
     cena.classList.remove('saindo');
+    const loc = cena.querySelector('.topo .local');
+    if (loc) caber(loc, FORMATO === 'h' ? 1300 : 1000);
     if (d) { contar(); if (d.tipo === 'eleito') setTimeout(confete, 1000); }
   }, tinha ? 450 : 0);
 }
@@ -292,11 +294,11 @@ window.aoAtualizar = () => {
   mostrar(false);
 };
 
-// 0 = Presidente · 1..6 = governadores · 7 = Senado CE · ← → navegam · R repete a animação
+// 0/P = Presidente · 1..9 = governadores · Shift+n = senado · ← → navegam · R repete a animação
 addEventListener('keydown', e => {
   const k = e.key.toLowerCase();
-  if (/^[0-9]$/.test(k) && +k < DISPUTAS.length) selecionar(+k);
-  else if (k === 'p') selecionar(0);
+  const i = DISPUTAS.findIndex(a => a.id === abaPorTecla(e));
+  if (i >= 0) selecionar(i);
   else if (k === 'arrowright' || k === ' ') selecionar(atual + 1);
   else if (k === 'arrowleft') selecionar(atual - 1);
   else if (k === 'r') mostrar(true);

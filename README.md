@@ -2,7 +2,7 @@
 
 Tela de apuração 1920×1080 para o vMix (Web Browser input). Dados direto do TSE (`resultados.tse.jus.br`), sem servidor.
 
-**Teclas:** `0`/`P` Presidente (Brasil) · `1` AM · `2` PA · `3` MA · `4` PI · `5` CE · `6` AL · `7` Senado CE · `8` Dep. Federal CE · `9` Dep. Estadual CE · `←` `→` navegam · `A` liga/desliga rodízio automático.
+**Teclas:** `0`/`P` Presidente · `1`–`9` Governador AM PA MA PI CE AL SP RJ MG · `Shift`+número Senado do mesmo estado · `D` Dep. Federal CE · `E` Dep. Estadual CE · `←` `→` navegam · `A` rodízio automático.
 
 **Parâmetros de URL**
 - `?sim=1` simulação com o resultado final real de 2022 (mostra selo SIMULAÇÃO)
@@ -29,4 +29,4 @@ Sem `?sala=` a tela funciona sozinha, só com teclado/toque local.
 Controle igual ao painel, mas com sala própria para não trocar junto:
 - Tela: `resultado.html?sala=CÓDIGO` (horizontal) ou `resultado.html?formato=vertical&sala=CÓDIGO`
 - Celular: `controle.html?sala=CÓDIGO&tipo=resultado` (sem deputados; tocar de novo repete a animação)
-- Teclas: `0` Presidente · `1`–`6` governadores · `7` Senado CE · `R` repete · `?rodizio=12` volta o rodízio automático
+- Teclas: iguais ao painel (sem deputados) · `R` repete · `?rodizio=12` volta o rodízio automático

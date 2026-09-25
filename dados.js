@@ -11,19 +11,44 @@ const DATAS = ['04/10/2026', '25/10/2026'];
 // simulação usa a apuração real de 2022
 const COD_SIM = { 1: { federal: '544', estadual: '546' }, 2: { federal: '545', estadual: '547' } };
 
-// ordem das abas: tecla 0 = presidente, 1..6 = governadores (mesma ordem do mapa do pacote), 7..9 = Ceará
+// Disputas. Teclas: 0 = Presidente · 1..9 = Governador (ordem de GOV) · Shift+n = Senado do mesmo estado · D/E = deputados CE
+const UFS = { am: 'AMAZONAS', pa: 'PARÁ', ma: 'MARANHÃO', pi: 'PIAUÍ', ce: 'CEARÁ', al: 'ALAGOAS',
+  sp: 'SÃO PAULO', rj: 'RIO DE JANEIRO', mg: 'MINAS GERAIS' };
+const GOV = ['am', 'pa', 'ma', 'pi', 'ce', 'al', 'sp', 'rj', 'mg'];
+const SEN = ['am', 'pa', 'ma', 'pi', 'ce', 'al', 'sp', 'rj', 'mg'];
+const GRUPOS = { pres: '', gov: 'GOVERNADOR', sen: 'SENADO', dep: 'DEPUTADOS CE' };
 const ABAS = [
-  { id: 'br', cargo: 1, abr: 'br', titulo: 'PRESIDENTE', local: 'BRASIL' },
-  { id: 'am', cargo: 3, abr: 'am', titulo: 'GOVERNADOR', local: 'AMAZONAS' },
-  { id: 'pa', cargo: 3, abr: 'pa', titulo: 'GOVERNADOR', local: 'PARÁ' },
-  { id: 'ma', cargo: 3, abr: 'ma', titulo: 'GOVERNADOR', local: 'MARANHÃO' },
-  { id: 'pi', cargo: 3, abr: 'pi', titulo: 'GOVERNADOR', local: 'PIAUÍ' },
-  { id: 'ce', cargo: 3, abr: 'ce', titulo: 'GOVERNADOR', local: 'CEARÁ' },
-  { id: 'al', cargo: 3, abr: 'al', titulo: 'GOVERNADOR', local: 'ALAGOAS' },
-  { id: 'sen-ce', cargo: 5, abr: 'ce', titulo: 'SENADO', local: 'CEARÁ', sub: '2 VAGAS', aba: 'SENADO' },
-  { id: 'df-ce', cargo: 6, abr: 'ce', titulo: 'DEPUTADO FEDERAL', local: 'CEARÁ', sub: 'MAIS VOTADOS', aba: 'DEP. FED', lista: 10 },
-  { id: 'de-ce', cargo: 7, abr: 'ce', titulo: 'DEPUTADO ESTADUAL', local: 'CEARÁ', sub: 'MAIS VOTADOS', aba: 'DEP. EST', lista: 10 },
+  { id: 'br', cargo: 1, abr: 'br', titulo: 'PRESIDENTE', local: 'BRASIL', grupo: 'pres', curto: 'BRASIL', tecla: '0' },
+  ...GOV.map((uf, i) => ({ id: uf, cargo: 3, abr: uf, titulo: 'GOVERNADOR', local: UFS[uf], grupo: 'gov',
+    curto: uf.toUpperCase(), tecla: String(i + 1) })),
+  ...SEN.map(uf => ({ id: 'sen-' + uf, cargo: 5, abr: uf, titulo: 'SENADO', local: UFS[uf], sub: '2 VAGAS', grupo: 'sen',
+    curto: uf.toUpperCase(), tecla: '⇧' + (GOV.indexOf(uf) + 1) })),
+  { id: 'df-ce', cargo: 6, abr: 'ce', titulo: 'DEPUTADO FEDERAL', local: 'CEARÁ', sub: 'MAIS VOTADOS', grupo: 'dep', curto: 'FEDERAL', tecla: 'D', lista: 10 },
+  { id: 'de-ce', cargo: 7, abr: 'ce', titulo: 'DEPUTADO ESTADUAL', local: 'CEARÁ', sub: 'MAIS VOTADOS', grupo: 'dep', curto: 'ESTADUAL', tecla: 'E', lista: 10 },
 ];
+
+// tecla -> id da disputa (null se não for atalho)
+function abaPorTecla(e) {
+  const m = /^(Digit|Numpad)([0-9])$/.exec(e.code);
+  if (m) {
+    const n = +m[2];
+    if (n === 0) return e.shiftKey ? null : 'br';
+    const uf = GOV[n - 1];
+    return e.shiftKey ? (SEN.includes(uf) ? 'sen-' + uf : null) : uf;
+  }
+  const k = e.key.toLowerCase();
+  return k === 'p' ? 'br' : k === 'd' ? 'df-ce' : k === 'e' ? 'de-ce' : null;
+}
+
+// reduz a fonte até o texto caber na largura (nomes de estado longos)
+function caber(el, largura) {
+  el.style.fontSize = '';
+  const r = document.createRange();
+  // largura do texto em px do palco (descontando a escala aplicada no #stage)
+  const texto = () => { r.selectNodeContents(el); return r.getBoundingClientRect().width / (el.getBoundingClientRect().width / el.offsetWidth || 1); };
+  let fs = parseFloat(getComputedStyle(el).fontSize);
+  while (texto() > largura && fs > 30) { fs -= 3; el.style.fontSize = fs + 'px'; }
+}
 
 /* ======================= estado ======================= */
 let codigos = SIM ? COD_SIM : { 1: {}, 2: {} };

@@ -21,7 +21,7 @@
   .con { font-size: 12px; font-weight: 600; color: var(--mut); text-align: right; line-height: 1.5; }
   .con i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: #f85149; margin-right: 5px; }
   .con.ok i { background: #2ea043; }
-  .noar { margin: 18px 0 12px; font-size: 13px; font-weight: 700; letter-spacing: 3px; color: var(--mut); }
+  .noar { margin: 16px 0 4px; font-size: 13px; font-weight: 700; letter-spacing: 3px; color: var(--mut); }
   .noar b { color: var(--tx); }
   .grade { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   button { font: inherit; color: inherit; background: var(--card); border: 2px solid var(--line); border-radius: 12px;
@@ -35,9 +35,12 @@
   button.on .nm { color: #fff; }
   button.enviando { border-color: var(--acc); }
   .sec { margin: 18px 0 8px; font-size: 13px; font-weight: 700; letter-spacing: 3px; color: var(--mut); }
-  .grade.ce { grid-template-columns: 1fr 1fr 1fr; }
-  .grade.ce button { min-height: 84px; padding: 12px 10px; }
-  .grade.ce .sg { font-size: 17px; letter-spacing: 0; }
+  .g-gov, .g-sen { grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  .g-gov button, .g-sen button { min-height: 70px; padding: 10px; }
+  .g-gov .sg, .g-sen .sg { font-size: 26px; }
+  .g-gov .nm, .g-sen .nm { font-size: 10px; letter-spacing: .5px; margin-top: 4px; }
+  .g-dep button { min-height: 70px; padding: 12px; }
+  .g-dep .sg { font-size: 22px; }
   .setas { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
   .setas button { min-height: 60px; align-items: center; justify-content: center; font-weight: 800; font-size: 22px; }
   .aviso { margin-top: 40px; padding: 20px; border: 2px solid #d29922; border-radius: 12px; font-weight: 600; line-height: 1.5; }
@@ -55,23 +58,12 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="sync.js"></script>
+<script src="dados.js"></script>
 <script>
-const ABAS = [
-  { id: 'br', sg: 'BRASIL', nm: 'PRESIDENTE' },
-  { id: 'am', sg: 'AM', nm: 'AMAZONAS' },
-  { id: 'pa', sg: 'PA', nm: 'PARÁ' },
-  { id: 'ma', sg: 'MA', nm: 'MARANHÃO' },
-  { id: 'pi', sg: 'PI', nm: 'PIAUÍ' },
-  { id: 'ce', sg: 'CE', nm: 'CEARÁ' },
-  { id: 'al', sg: 'AL', nm: 'ALAGOAS' },
-  { id: 'sen-ce', sg: 'SENADO', nm: 'CEARÁ', ce: 1 },
-  { id: 'df-ce', sg: 'DEP. FEDERAL', nm: 'CEARÁ', ce: 1 },
-  { id: 'de-ce', sg: 'DEP. ESTADUAL', nm: 'CEARÁ', ce: 1 },
-];
 // ?tipo=resultado: controla a página de resultado (sem deputados)
 const RESULTADO = new URLSearchParams(location.search).get('tipo') === 'resultado';
-if (RESULTADO) ABAS.splice(ABAS.findIndex(a => a.id === 'df-ce'), 2);
-const rotulo = a => a.id === 'br' ? 'PRESIDENTE · BRASIL' : a.ce ? a.sg + ' · CEARÁ' : 'GOVERNADOR · ' + a.nm;
+const LISTA = ABAS.filter(a => !(RESULTADO && a.lista));
+const rotulo = a => a.id === 'br' ? 'PRESIDENTE · BRASIL' : `${a.titulo} · ${a.local}`;
 const app = document.getElementById('app');
 let atual = null;
 
@@ -82,18 +74,19 @@ if (RESULTADO) {
 if (!window.Sync) {
   app.innerHTML = `<div class="aviso">Falta o código da sala no link.<br>Use o endereço completo, ex.: <code>controle.html?sala=CÓDIGO</code></div>`;
 } else {
-  app.innerHTML = `
-    <div class="noar">NA TELA: <b id="noar">—</b></div>
-    <div class="grade">${ABAS.filter(a => !a.ce).map(a => `<button data-id="${a.id}" class="${a.id === 'br' ? 'br' : ''}">
-      <span class="sg">${a.sg}</span><span class="nm">${rotulo(a)}</span></button>`).join('')}</div>
-    <div class="sec">CEARÁ</div>
-    <div class="grade ce">${ABAS.filter(a => a.ce).map(a => `<button data-id="${a.id}">
-      <span class="sg">${a.sg}</span><span class="nm">CEARÁ</span></button>`).join('')}</div>
-    <div class="setas"><button data-passo="-1">◀</button><button data-passo="1">▶</button></div>`;
+  const botao = a => `<button data-id="${a.id}" class="${a.id === 'br' ? 'br' : ''}">
+    <span class="sg">${a.curto}</span><span class="nm">${a.id === 'br' ? 'PRESIDENTE' : a.grupo === 'dep' ? 'DEPUTADO ' + a.curto : a.local}</span></button>`;
+  app.innerHTML = `<div class="noar">NA TELA: <b id="noar">—</b></div>` +
+    Object.keys(GRUPOS).map(g => {
+      const itens = LISTA.filter(a => a.grupo === g);
+      if (!itens.length) return '';
+      return `${GRUPOS[g] ? `<div class="sec">${GRUPOS[g]}</div>` : ''}<div class="grade g-${g}">${itens.map(botao).join('')}</div>`;
+    }).join('') +
+    `<div class="setas"><button data-passo="-1">◀</button><button data-passo="1">▶</button></div>`;
 
   const marcar = id => {
     atual = id;
-    document.querySelectorAll('[data-id]').forEach(b => { b.classList.toggle('on', b.dataset.id === id); b.classList.remove('enviando'); });
+    document.querySelectorAll('[data-id]').forEach(b => b.classList.toggle('on', b.dataset.id === id));
     const a = ABAS.find(x => x.id === id);
     document.getElementById('noar').textContent = a ? rotulo(a) : '—';
   };
@@ -106,8 +99,8 @@ if (!window.Sync) {
   app.addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b) return;
     if (b.dataset.id) return ir(b.dataset.id);
-    const i = ABAS.findIndex(a => a.id === atual);
-    ir(ABAS[(Math.max(i, 0) + +b.dataset.passo + ABAS.length) % ABAS.length].id);
+    const i = LISTA.findIndex(a => a.id === atual);
+    ir(LISTA[(Math.max(i, 0) + +b.dataset.passo + LISTA.length) % LISTA.length].id);
   });
 
   Sync.on('aba', marcar);   // outra tela/controle trocou

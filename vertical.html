@@ -52,7 +52,7 @@
   .sobre .sim { background: #d29922; color: #000; letter-spacing: 1px; padding: 2px 10px; border-radius: 4px; font-size: 18px; font-weight: 800; }
   h1 { margin-top: 14px; line-height: .95; }
   h1 .cargo { display: block; font-weight: 300; font-size: 54px; letter-spacing: 2px; }
-  h1 .local { display: block; font-weight: 900; font-size: 96px; letter-spacing: -1px; }
+  h1 .local { display: block; white-space: nowrap; font-weight: 900; font-size: 96px; letter-spacing: -1px; }
 
   .apur { margin-top: 24px; display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 6px 20px; }
   .apur .rot { font-weight: 600; font-size: 20px; letter-spacing: 3px; color: var(--mut); }
@@ -100,12 +100,16 @@
 
   /* rodapé */
   #rodape { position: absolute; left: 96px; right: 90px; bottom: 44px; display: flex; justify-content: space-between; align-items: center; }
-  .fonte { font-weight: 500; font-size: 20px; color: var(--mut); letter-spacing: 1px; }
+  .fonte { font-weight: 500; font-size: 17px; color: var(--mut); letter-spacing: 1px; }
   .abas { display: flex; gap: 6px; }
-  .abas span { font-weight: 700; font-size: 17px; letter-spacing: 1px; padding: 7px 11px; border-radius: 4px;
+  .abas span { font-weight: 700; font-size: 15px; letter-spacing: 1px; padding: 6px 8px; border-radius: 4px;
     color: var(--mut); border: 2px solid var(--line); transition: all .3s; }
   .abas span.on { background: var(--acc); border-color: var(--acc); color: #fff; }
   .abas span kbd { font: inherit; opacity: .6; margin-right: 6px; }
+  .abas .grp { display: flex; gap: 4px; align-items: center; }
+  .abas .grp + .grp { margin-left: 10px; }
+  .abas.dicas span { font-size: 13px; padding: 5px 6px; }
+  .abas em { white-space: nowrap; font-style: normal; font-weight: 700; font-size: 12px; letter-spacing: 2px; color: var(--mut); margin-right: 4px; }
 
   /* toque (TV touch) */
   .abas span, #mapa .uf path, .pino { cursor: pointer; }
@@ -150,7 +154,10 @@
   #rodape { left: 70px; right: 70px; bottom: 50px; flex-direction: column-reverse; align-items: stretch; gap: 16px; }
   .fonte { text-align: center; }
   .abas { flex-wrap: wrap; justify-content: center; gap: 8px; }
-  .abas span { font-size: 18px; padding: 8px 12px; }
+  .abas span { font-size: 17px; padding: 7px 10px; }
+  .abas .grp { flex-wrap: wrap; justify-content: center; }
+  .abas .grp + .grp { margin-left: 0; }
+  .abas { flex-direction: column; align-items: center; gap: 10px; }
 </style>
 </head>
 <body>

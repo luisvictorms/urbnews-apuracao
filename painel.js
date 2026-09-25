@@ -4,9 +4,9 @@ let autoTimer = null;
 window.aoAtualizar = () => render(false);
 
 /* ======================= mapa ======================= */
-const NOSSOS = { am: 'AM', pa: 'PA', ma: 'MA', pi: 'PI', ce: 'CE', al: 'AL' };
+const NOSSOS = Object.fromEntries(GOV.map(uf => [uf, uf.toUpperCase()]));
 // ajuste fino da posição dos pinos (px no viewBox)
-const PINO_AJUSTE = { AM: [0, -10], PA: [10, -40], MA: [0, -20], PI: [0, 0], CE: [0, -6], AL: [6, 0] };
+const PINO_AJUSTE = { AM: [0, -10], PA: [10, -40], MA: [0, -20], PI: [0, 0], CE: [0, -6], AL: [6, 0], SP: [6, 4], RJ: [10, 8], MG: [0, -6] };
 function montarMapa() {
   const svg = document.getElementById('mapa');
   const B = window.BRASIL;
@@ -47,8 +47,11 @@ function render(trocouAba) {
   document.getElementById('secoes').textContent = fpct(res ? res.secoes : 0) + '%';
   document.getElementById('secoesbar').style.width = (res ? res.secoes : 0) + '%';
   document.getElementById('fonte').textContent = res ? `Fonte: TSE · Última consulta às ${res.consulta}` : 'Fonte: TSE';
-  document.getElementById('abas').innerHTML = ABAS.map((a, i) =>
-    `<span data-i="${i}" class="${i === atual ? 'on' : ''}">${DICAS ? `<kbd>${i}</kbd>` : ''}${a.aba || (a.id === 'br' ? 'BRASIL' : a.id.toUpperCase())}</span>`).join('');
+  document.getElementById('abas').innerHTML = Object.keys(GRUPOS).map(g => `<div class="grp">${GRUPOS[g] ? `<em>${GRUPOS[g]}</em>` : ''}${
+    ABAS.map((a, i) => a.grupo !== g ? '' :
+      `<span data-i="${i}" class="${i === atual ? 'on' : ''}">${DICAS ? `<kbd>${a.tecla}</kbd>` : ''}${a.curto}</span>`).join('')}</div>`).join('');
+  caber(document.getElementById('local'), document.getElementById('painel').clientWidth);
+  document.getElementById('abas').classList.toggle('dicas', DICAS);
   // candidatos
   const box = document.getElementById('cands');
   if (!res || !res.cands.length) {
@@ -106,11 +109,11 @@ function irPara(i, remoto) {
 }
 
 /* ======================= teclado ======================= */
-// 0 ou P = presidente · 1..6 = governadores · ← → navegam · A = rodízio automático
+// 0/P = presidente · 1..9 = governadores · Shift+n = senado · D/E = deputados · ← → navegam · A = rodízio automático
 addEventListener('keydown', e => {
   const k = e.key.toLowerCase();
-  if (/^[0-9]$/.test(k) && +k < ABAS.length) irPara(+k);
-  else if (k === 'p') irPara(0);
+  const id = abaPorTecla(e);
+  if (id) irPara(ABAS.findIndex(a => a.id === id));
   else if (k === 'arrowright' || k === ' ') irPara(atual + 1);
   else if (k === 'arrowleft') irPara(atual - 1);
   else if (k === 'a') {
