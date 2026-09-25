@@ -29,22 +29,22 @@
   #cena { position: absolute; inset: 0; transition: opacity .45s; }
   #cena.saindo { opacity: 0; }
   .f .n1 { --tag-top: 48px; --tag-w: 300px; --tag-h: 100px; --tag-fs: 57px; --tit-top: 162px; --tit-fs: 108px; --sub-top: 292px;
-    --sub-fs: 28px; --foto-top: 375px; --foto-w: 657px; --foto-h: 600px; --gap: 0px; --rot-fs: 30px; --rot-h: 69px; --rot-w: 453px;
+    --sub-fs: 28px; --foto-top: 375px; --foto-w: 430px; --foto-h: 600px; --gap: 0px; --rot-fs: 30px; --rot-h: 69px; --rot-w: 400px;
     --logo-top: 1170px; --logo-w: 330px; --num-fs: 76px;}
   .f .n2 { --tag-top: 88px; --tag-w: 330px; --tag-h: 88px; --tag-fs: 50px; --tit-top: 194px; --tit-fs: 112px; --sub-top: 322px;
-    --sub-fs: 28px; --foto-top: 471px; --foto-w: 459px; --foto-h: 430px; --gap: 30px; --rot-fs: 20px; --rot-h: 50px; --rot-w: 319px;
+    --sub-fs: 28px; --foto-top: 471px; --foto-w: 372px; --foto-h: 520px; --gap: 60px; --rot-fs: 20px; --rot-h: 50px; --rot-w: 330px;
     --logo-top: 1170px; --logo-w: 300px; --num-fs: 60px;}
   .v .n1 { --tag-top: 150px; --tag-w: 340px; --tag-h: 112px; --tag-fs: 64px; --tit-top: 290px; --tit-fs: 124px; --sub-top: 436px;
-    --sub-fs: 32px; --foto-top: 540px; --foto-w: 760px; --foto-h: 790px; --gap: 0px; --rot-fs: 36px; --rot-h: 80px; --rot-w: 540px;
+    --sub-fs: 32px; --foto-top: 540px; --foto-w: 566px; --foto-h: 790px; --gap: 0px; --rot-fs: 36px; --rot-h: 80px; --rot-w: 500px;
     --logo-top: 1600px; --logo-w: 420px; --num-fs: 100px;}
   .v .n2 { --tag-top: 190px; --tag-w: 360px; --tag-h: 100px; --tag-fs: 56px; --tit-top: 320px; --tit-fs: 124px; --sub-top: 466px;
-    --sub-fs: 32px; --foto-top: 600px; --foto-w: 470px; --foto-h: 640px; --gap: 40px; --rot-fs: 24px; --rot-h: 58px; --rot-w: 360px;
+    --sub-fs: 32px; --foto-top: 600px; --foto-w: 458px; --foto-h: 640px; --gap: 40px; --rot-fs: 24px; --rot-h: 58px; --rot-w: 360px;
     --logo-top: 1480px; --logo-w: 380px; --num-fs: 76px;}
   .h .n1 { --tag-top: 40px; --tag-w: 260px; --tag-h: 84px; --tag-fs: 48px; --tit-top: 136px; --tit-fs: 96px; --sub-top: 250px;
-    --sub-fs: 24px; --foto-top: 318px; --foto-w: 400px; --foto-h: 390px; --gap: 0px; --rot-fs: 26px; --rot-h: 58px; --rot-w: 400px;
+    --sub-fs: 24px; --foto-top: 318px; --foto-w: 280px; --foto-h: 390px; --gap: 0px; --rot-fs: 26px; --rot-h: 58px; --rot-w: 340px;
     --logo-top: 920px; --logo-w: 260px; --num-fs: 64px;}
   .h .n2 { --tag-top: 40px; --tag-w: 300px; --tag-h: 84px; --tag-fs: 46px; --tit-top: 136px; --tit-fs: 96px; --sub-top: 250px;
-    --sub-fs: 24px; --foto-top: 318px; --foto-w: 360px; --foto-h: 370px; --gap: 60px; --rot-fs: 22px; --rot-h: 52px; --rot-w: 340px;
+    --sub-fs: 24px; --foto-top: 318px; --foto-w: 265px; --foto-h: 370px; --gap: 90px; --rot-fs: 22px; --rot-h: 52px; --rot-w: 300px;
     --logo-top: 920px; --logo-w: 260px; --num-fs: 56px;}
 
   /* ---------- selo (caixa com bolinhas nos cantos) ---------- */
@@ -75,7 +75,7 @@
     background: #0b2a33; display: grid; place-items: center; font-weight: 800; font-size: 120px; color: #2c5560;
     box-shadow: 0 0 34px rgba(174,253,4,.35), 0 30px 70px rgba(0,0,0,.55); position: relative;
     animation: brilho 2.6s ease-in-out 1.5s infinite; }
-  .mold img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 18%; }
+  .mold img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%; }  /* moldura na proporção da foto do TSE: não corta */
   @keyframes brilho { 50% { box-shadow: 0 0 60px rgba(174,253,4,.6), 0 30px 70px rgba(0,0,0,.55); } }
   .rot { position: absolute; left: 50%; bottom: calc(var(--rot-h) * -0.26); transform: translateX(-50%);
     min-width: var(--rot-w); max-width: calc(var(--foto-w) + 40px); height: var(--rot-h); padding: 0 26px; display: grid; place-items: center;
