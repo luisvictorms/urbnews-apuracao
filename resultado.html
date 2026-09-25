@@ -169,17 +169,23 @@
   .f .n1 .partG { font-size: 28px; margin-top: 10px; }
   .f .n1 .pctG { font-size: 110px; margin-top: 16px; } .f .n1 .pctG small { font-size: 54px; }
   .f .n1 .votosG { font-size: 26px; }
-  .f .n2 .venc:nth-child(1) { top: 430px; } .f .n2 .venc:nth-child(2) { top: 830px; }
-  .f .n2 .foto { width: 270px; height: 330px; font-size: 80px; }
-  .f .n2 .selo { font-size: 36px; } .f .n2 .nomeG { font-size: 52px; }
-  .f .n2 .partG { font-size: 22px; } .f .n2 .pctG { font-size: 80px; } .f .n2 .pctG small { font-size: 40px; }
-  .f .n2 .votosG { font-size: 22px; }
-  .f .duelo { top: 420px; height: 800px; }
-  .f .lado { gap: 34px; padding: 0 40px; }
-  .f .lado .foto { width: 230px; height: 280px; }
-  .f .lado .nomeG { font-size: 50px; } .f .lado .pctG { font-size: 78px; } .f .lado .pctG small { font-size: 38px; }
-  .f .lado .partG, .f .lado .votosG { font-size: 21px; }
-  .f .vs { width: 140px; height: 140px; font-size: 78px; left: calc(50% - 70px); top: calc(420px + 400px - 70px); }
+  /* feed: 2 eleitos (Senado) lado a lado */
+  .f .n2 .venc { flex-direction: column; text-align: center; gap: 0; right: auto; width: 480px; top: 440px; }
+  .f .n2 .venc:nth-child(1) { left: 50px; top: 440px; } .f .n2 .venc:nth-child(2) { left: 550px; top: 440px; }
+  .f .n2 .foto { width: 300px; height: 360px; font-size: 90px; }
+  .f .n2 .selo { font-size: 36px; margin: -28px 0 18px; z-index: 3; }
+  .f .n2 .nomeG { font-size: 46px; max-width: 460px; }
+  .f .n2 .partG { font-size: 21px; } .f .n2 .pctG { font-size: 78px; margin-top: 12px; } .f .n2 .pctG small { font-size: 38px; }
+  .f .n2 .votosG { font-size: 21px; }
+  /* feed: 2º turno lado a lado */
+  .f .duelo { top: 420px; height: 790px; left: 50px; right: 50px; flex-direction: row; }
+  .f .lado, .f .lado.b { flex-direction: column; justify-content: flex-start; text-align: center; gap: 22px; padding: 36px 20px 0; }
+  .f .lado.a { margin: 0 36px 0 0; } .f .lado.b { margin: 0 0 0 36px; }
+  .f .lado .foto { width: 300px; height: 360px; }
+  .f .lado .nomeG { font-size: 46px; } .f .lado .pctG { font-size: 80px; margin-top: 14px; } .f .lado .pctG small { font-size: 40px; }
+  .f .lado .partG, .f .lado .votosG { font-size: 20px; }
+  .f .lado .pos { font-size: 20px; margin-bottom: 8px; }
+  .f .vs { width: 130px; height: 130px; font-size: 72px; left: calc(50% - 65px); top: calc(420px + 36px + 180px - 65px); }
   .f .faixa { top: 1244px; font-size: 26px; padding: 12px 32px; }
   .f #rod { bottom: 18px; font-size: 16px; }
 </style>
