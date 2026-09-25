@@ -98,7 +98,7 @@
   <div class="quadro" id="quadro"><iframe id="prev" title="Pré-visualização"></iframe></div>
 </main>
 
-<script src="dados.js"></script>
+<script src="dados.js?v=20260926a"></script>
 <script>
 // Estúdio: escolhe tipo/formato/disputa, mostra a prévia e exporta vídeo (10 s) ou o quadro final.
 const TAM = { h: [1920, 1080], v: [1080, 1920], f: [1080, 1350] };
@@ -107,8 +107,10 @@ const est = { tipo: 'resultado', formato: 'f', disputa: 'br', fonte: 'sim', turn
 try { Object.assign(est, JSON.parse(localStorage.getItem('estudio') || '{}')); } catch (e) {}
 const $ = id => document.getElementById(id);
 
+const VERSAO = '20260926a';   // muda a cada publicação: as telas nunca vêm do cache antigo
 function urlDe(extra = {}) {
   const q = new URLSearchParams();
+  q.set('v', VERSAO);
   if (est.fonte === 'sim') q.set('sim', '1');
   if (est.turno) q.set('turno', est.turno);
   let pag;

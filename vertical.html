@@ -162,9 +162,11 @@
   .abas { flex-direction: column; align-items: center; gap: 10px; }
   /* fundo texturizado do PSD da arte de eleições */
   #stage { background: var(--bg2) url(fundo.jpg) center / cover no-repeat !important; }
+  .sem-abas #abas { display: none !important; }
 </style>
 </head>
 <body>
+<script>if (/[?&]abas=0/.test(location.search)) document.documentElement.classList.add('sem-abas');</script>
 <div id="stage">
   <div class="marca"><img src="logo.png" alt="urb.NEWS Eleições 2026"></div>
 
@@ -188,11 +190,11 @@
   </div>
 </div>
 
-<script src="brasil.js"></script>
+<script src="brasil.js?v=20260926a"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script src="sync.js"></script>
-<script src="dados.js"></script>
-<script src="exportar.js"></script>
-<script src="painel.js"></script>
+<script src="sync.js?v=20260926a"></script>
+<script src="dados.js?v=20260926a"></script>
+<script src="exportar.js?v=20260926a"></script>
+<script src="painel.js?v=20260926a"></script>
 </body>
 </html>
