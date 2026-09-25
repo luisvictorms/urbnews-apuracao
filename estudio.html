@@ -113,7 +113,7 @@ function urlDe(extra = {}) {
   if (est.turno) q.set('turno', est.turno);
   let pag;
   if (est.tipo === 'resultado') { pag = 'resultado.html'; if (est.formato !== 'h') q.set('formato', est.formato === 'v' ? 'vertical' : 'feed'); }
-  else pag = { h: 'index.html', v: 'vertical.html', f: 'feed.html' }[est.formato];
+  else { pag = { h: 'index.html', v: 'vertical.html', f: 'feed.html' }[est.formato]; q.set('abas', '0'); }
   for (const [k, v] of Object.entries(extra)) q.set(k, v);
   const qs = q.toString();
   return `${pag}${qs ? '?' + qs : ''}#${est.disputa}`;

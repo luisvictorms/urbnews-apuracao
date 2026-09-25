@@ -60,6 +60,7 @@ function render(trocouAba) {
       `<span data-i="${i}" class="${i === atual ? 'on' : ''}">${DICAS ? `<kbd>${a.tecla}</kbd>` : ''}${a.curto}</span>`).join('')}</div>`).join('');
   caber(document.getElementById('local'), document.getElementById('painel').clientWidth);
   document.getElementById('abas').classList.toggle('dicas', DICAS);
+  if (Q.get('abas') === '0') document.getElementById('abas').style.display = 'none';   // estúdio: sem a faixa de abas
   // candidatos
   const box = document.getElementById('cands');
   if (!res || !res.cands.length) {
