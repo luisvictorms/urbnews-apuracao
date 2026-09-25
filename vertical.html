@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Apuração Urbnews</title>
+<title>Apuração Urbnews · Vertical</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,800&display=swap" rel="stylesheet">
@@ -114,6 +114,43 @@
   /* troca de aba */
   #painel.saindo .troca { opacity: 0; transform: translateY(-14px); }
   .troca { transition: opacity .25s, transform .25s; }
+
+  /* ================= VERTICAL 1080x1920 ================= */
+  #stage { width: 1080px; height: 1920px;
+    background:
+      repeating-linear-gradient(118deg, rgba(255,255,255,.018) 0 1px, transparent 1px 9px),
+      repeating-linear-gradient(28deg, rgba(255,255,255,.012) 0 1px, transparent 1px 13px),
+      radial-gradient(ellipse 100% 60% at 70% 12%, #21414e 0%, var(--bg) 45%, var(--bg2) 100%); }
+  .marca { left: 70px; top: 80px; width: 330px; }
+  #mapa { left: 540px; top: 40px; width: 470px; height: 450px; }
+  #mapa .uf path { stroke-width: 1.4; }
+  .pino text { font-size: 26px; }
+  #painel { left: 70px; top: 520px; width: 940px; height: 1260px; }
+  h1 .cargo { font-size: 58px; }
+  h1 .local { font-size: 118px; }
+  .apur { margin-top: 30px; }
+  .apur .val { font-size: 48px; }
+  #cands { margin-top: 34px; gap: 18px; }
+  .cand { grid-template-columns: 140px 1fr 230px; gap: 0 26px; padding: 16px 24px 16px 16px; }
+  .foto { width: 140px; height: 140px; }
+  .nome { font-size: 44px; }
+  .part { font-size: 24px; }
+  .pct { font-size: 68px; }
+  .pct small { font-size: 36px; }
+  .votos { font-size: 22px; }
+  /* deputados: 10 em uma coluna */
+  #cands.mini { grid-template-columns: minmax(0,1fr); gap: 8px; }
+  #cands.mini .cand { grid-template-columns: 64px minmax(0,1fr) auto; padding: 7px 18px 7px 7px; }
+  #cands.mini .foto { width: 64px; height: 64px; }
+  #cands.mini .nome { font-size: 28px; }
+  #cands.mini .part { font-size: 17px; }
+  #cands.mini .pct { font-size: 36px; }
+  #cands.mini .pct small { font-size: 22px; }
+  #cands.mini .votos { font-size: 16px; }
+  #rodape { left: 70px; right: 70px; bottom: 50px; flex-direction: column-reverse; align-items: stretch; gap: 16px; }
+  .fonte { text-align: center; }
+  .abas { flex-wrap: wrap; justify-content: center; gap: 8px; }
+  .abas span { font-size: 18px; padding: 8px 12px; }
 </style>
 </head>
 <body>

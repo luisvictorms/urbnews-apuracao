@@ -20,3 +20,12 @@ Acrescente `?sala=CÓDIGO` (código secreto combinado com a equipe) em todas as 
 
 Tocar numa aba, no mapa ou no celular troca todas as telas da mesma sala (Supabase Realtime, projeto `urbnews-apuracao`).
 Sem `?sala=` a tela funciona sozinha, só com teclado/toque local.
+
+## Vertical
+`vertical.html` — mesmo painel em 1080×1920, mesmas teclas e mesmo controle (`?sala=CÓDIGO`).
+
+## Resultado (sem controle)
+`resultado.html` — passa sozinho pelas disputas já definidas (Presidente, governadores e Senado CE):
+animação de **ELEITO** (raios, selo, confete) ou de **2º TURNO** (duelo lado a lado).
+- `?formato=vertical` 1080×1920 (padrão: horizontal 1920×1080)
+- `?tempo=12` segundos por disputa · `#ce` fixa uma disputa · `?sim=1` simulação 2022

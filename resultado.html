@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Resultado Urbnews</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,900&display=swap" rel="stylesheet">
+<style>
+  :root { --bg: #14313d; --bg2: #0d1f27; --acc: #00a2ff; --tag: #c9c6ca; --tx: #fff; --mut: #9fb2bc; --line: rgba(255,255,255,.14); }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 100%; height: 100%; background: #000; overflow: hidden; }
+  body { font-family: Montserrat, sans-serif; color: var(--tx); }
+
+  #stage { position: absolute; left: 50%; top: 50%; transform-origin: 0 0; overflow: hidden;
+    background:
+      repeating-linear-gradient(118deg, rgba(255,255,255,.018) 0 1px, transparent 1px 9px),
+      repeating-linear-gradient(28deg, rgba(255,255,255,.012) 0 1px, transparent 1px 13px),
+      radial-gradient(ellipse 90% 80% at 50% 45%, #21414e 0%, var(--bg) 45%, var(--bg2) 100%); }
+  #stage.h { width: 1920px; height: 1080px; }
+  #stage.v { width: 1080px; height: 1920px; }
+  #confete { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
+  .marca { position: absolute; z-index: 4; }
+  .marca img { display: block; width: 100%; }
+  .h .marca { left: 96px; top: 72px; width: 330px; }
+  .v .marca { left: 50%; top: 80px; width: 360px; transform: translateX(-50%); }
+  .sim { position: absolute; z-index: 6; right: 40px; top: 40px; background: #d29922; color: #000; font-weight: 800;
+    font-size: 20px; padding: 4px 12px; border-radius: 4px; }
+  #rod { position: absolute; z-index: 4; bottom: 44px; left: 0; right: 0; text-align: center; font-weight: 500; font-size: 20px;
+    color: var(--mut); letter-spacing: 1px; }
+
+  #cena { position: absolute; inset: 0; transition: opacity .45s; }
+  #cena.saindo { opacity: 0; }
+
+  /* cabeçalho da cena */
+  .topo { position: absolute; z-index: 3; animation: desce .7s cubic-bezier(.2,.8,.2,1) both; }
+  .topo .cargo { display: block; font-weight: 300; letter-spacing: 3px; }
+  .topo .local { display: block; font-weight: 900; line-height: .95; }
+  .h .topo { right: 96px; top: 72px; text-align: right; }
+  .h .topo .cargo { font-size: 44px; } .h .topo .local { font-size: 86px; }
+  .v .topo { left: 0; right: 0; top: 330px; text-align: center; }
+  .v .topo .cargo { font-size: 48px; } .v .topo .local { font-size: 104px; }
+  @keyframes desce { from { opacity: 0; transform: translateY(-40px); } }
+
+  .foto { border-radius: 10px; overflow: hidden; background: #0e2630; position: relative; display: grid; place-items: center;
+    font-weight: 900; color: var(--mut); }
+  .foto img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 18%; }
+
+  /* ================= ELEITO ================= */
+  .raios { position: absolute; width: 2400px; height: 2400px; border-radius: 50%; z-index: 0;
+    background: repeating-conic-gradient(from 0deg, rgba(0,162,255,.16) 0 6deg, transparent 6deg 18deg);
+    -webkit-mask: radial-gradient(circle, #000 0 18%, transparent 55%); mask: radial-gradient(circle, #000 0 18%, transparent 55%);
+    animation: raiosIn 1.2s ease-out both, gira 40s linear infinite; }
+  .h .raios { left: calc(560px - 1200px); top: calc(590px - 1200px); }
+  .v .raios { left: calc(540px - 1200px); top: calc(930px - 1200px); }
+  @keyframes raiosIn { from { opacity: 0; } }
+  @keyframes gira { to { transform: rotate(360deg); } }
+
+  .venc { position: absolute; z-index: 2; }
+  .venc .foto { box-shadow: 0 30px 80px rgba(0,0,0,.45); animation: fotoIn .9s cubic-bezier(.3,1.5,.5,1) .2s both; }
+  .venc .foto::after { content: ""; position: absolute; inset: 0; border-radius: 10px; border: 5px solid var(--acc);
+    animation: anel 2.4s ease-out 1.1s infinite; }
+  @keyframes fotoIn { from { opacity: 0; transform: scale(.55) rotate(-4deg); } }
+  @keyframes anel { 0% { box-shadow: 0 0 0 0 rgba(0,162,255,.7); } 100% { box-shadow: 0 0 0 60px rgba(0,162,255,0); } }
+  .selo { display: inline-block; position: relative; overflow: hidden; background: var(--acc); color: #fff; font-weight: 900; font-style: italic;
+    letter-spacing: 4px; padding: 6px 26px 8px 22px; border-radius: 6px; transform: rotate(-3deg);
+    animation: carimbo .55s cubic-bezier(.2,1.6,.4,1) .95s both; box-shadow: 0 12px 40px rgba(0,162,255,.45); }
+  .selo::after { content: ""; position: absolute; top: 0; bottom: 0; width: 40%; left: -60%;
+    background: linear-gradient(100deg, transparent, rgba(255,255,255,.75), transparent); animation: brilho 3s ease-in-out 1.6s infinite; }
+  @keyframes carimbo { from { opacity: 0; transform: scale(3.2) rotate(-14deg); } }
+  @keyframes brilho { 0% { left: -60%; } 35%, 100% { left: 130%; } }
+  .nomeG { font-weight: 900; line-height: 1; letter-spacing: -1px; animation: sobe .7s cubic-bezier(.2,.8,.2,1) .5s both; }
+  .partG { font-weight: 600; color: var(--mut); letter-spacing: 2px; animation: sobe .7s cubic-bezier(.2,.8,.2,1) .65s both; }
+  .pctG { font-weight: 900; line-height: 1; font-variant-numeric: tabular-nums; animation: sobe .7s cubic-bezier(.2,.8,.2,1) .8s both; }
+  .pctG small { font-weight: 700; }
+  .votosG { font-weight: 500; color: var(--mut); animation: sobe .7s cubic-bezier(.2,.8,.2,1) .95s both; }
+  @keyframes sobe { from { opacity: 0; transform: translateY(40px); } }
+
+  /* 1 eleito · horizontal */
+  .h .n1 .venc { left: 330px; top: 330px; display: flex; align-items: center; gap: 70px; }
+  .h .n1 .foto { width: 460px; height: 520px; font-size: 140px; }
+  .h .n1 .selo { font-size: 64px; margin-bottom: 26px; }
+  .h .n1 .nomeG { font-size: 104px; max-width: 1000px; }
+  .h .n1 .partG { font-size: 34px; margin-top: 14px; }
+  .h .n1 .pctG { font-size: 150px; margin-top: 30px; } .h .n1 .pctG small { font-size: 72px; }
+  .h .n1 .votosG { font-size: 32px; margin-top: 6px; }
+  /* 2 eleitos (Senado) · horizontal */
+  .h .n2 .venc { top: 330px; display: flex; align-items: center; gap: 40px; }
+  .h .n2 .venc:nth-child(1) { left: 150px; } .h .n2 .venc:nth-child(2) { left: 1010px; }
+  .h .n2 .foto { width: 300px; height: 350px; font-size: 90px; }
+  .h .n2 .selo { font-size: 40px; margin-bottom: 18px; }
+  .h .n2 .nomeG { font-size: 58px; max-width: 460px; }
+  .h .n2 .partG { font-size: 24px; margin-top: 10px; }
+  .h .n2 .pctG { font-size: 96px; margin-top: 18px; } .h .n2 .pctG small { font-size: 46px; }
+  .h .n2 .votosG { font-size: 24px; }
+  /* vertical */
+  .v .venc { left: 0; right: 0; display: flex; flex-direction: column; align-items: center; text-align: center; }
+  .v .n1 .venc { top: 610px; }
+  .v .n1 .foto { width: 520px; height: 600px; font-size: 150px; }
+  .v .n1 .selo { font-size: 72px; margin: -40px 0 30px; z-index: 3; }
+  .v .n1 .nomeG { font-size: 96px; max-width: 980px; }
+  .v .n1 .partG { font-size: 34px; margin-top: 14px; }
+  .v .n1 .pctG { font-size: 150px; margin-top: 26px; } .v .n1 .pctG small { font-size: 72px; }
+  .v .n1 .votosG { font-size: 32px; }
+  .v .n2 .venc { flex-direction: row; text-align: left; gap: 36px; left: 60px; right: 60px; justify-content: flex-start; }
+  .v .n2 .venc:nth-child(1) { top: 610px; } .v .n2 .venc:nth-child(2) { top: 1150px; }
+  .v .n2 .foto { width: 330px; height: 390px; font-size: 90px; }
+  .v .n2 .selo { font-size: 44px; margin-bottom: 16px; }
+  .v .n2 .nomeG { font-size: 62px; max-width: 580px; }
+  .v .n2 .partG { font-size: 26px; margin-top: 10px; }
+  .v .n2 .pctG { font-size: 100px; margin-top: 16px; } .v .n2 .pctG small { font-size: 48px; }
+  .v .n2 .votosG { font-size: 26px; }
+
+  /* ================= 2º TURNO ================= */
+  .duelo { position: absolute; z-index: 2; }
+  .h .duelo { left: 96px; right: 96px; top: 300px; height: 600px; display: flex; }
+  .v .duelo { left: 60px; right: 60px; top: 560px; height: 1150px; display: flex; flex-direction: column; }
+  .lado { flex: 1; position: relative; display: flex; align-items: center; gap: 44px; padding: 0 50px;
+    background: linear-gradient(135deg, rgba(0,162,255,.16), rgba(255,255,255,.03)); border-radius: 14px; }
+  .lado.b { background: linear-gradient(225deg, rgba(201,198,202,.16), rgba(255,255,255,.03)); flex-direction: row-reverse; text-align: right; }
+  .h .lado.a { margin-right: 60px; animation: entraEsq .9s cubic-bezier(.2,.9,.2,1) .25s both; }
+  .h .lado.b { margin-left: 60px; animation: entraDir .9s cubic-bezier(.2,.9,.2,1) .25s both; }
+  .v .lado.a { margin-bottom: 60px; animation: entraEsq .9s cubic-bezier(.2,.9,.2,1) .25s both; }
+  .v .lado.b { margin-top: 60px; animation: entraDir .9s cubic-bezier(.2,.9,.2,1) .25s both; }
+  @keyframes entraEsq { from { opacity: 0; transform: translateX(-260px) skewX(8deg); } }
+  @keyframes entraDir { from { opacity: 0; transform: translateX(260px) skewX(-8deg); } }
+  .lado .foto { flex: none; width: 300px; height: 360px; font-size: 90px; border: 4px solid rgba(255,255,255,.18); }
+  .lado.a .foto { border-color: var(--acc); }
+  .lado .nomeG { font-size: 60px; animation-delay: .8s; }
+  .lado .partG { font-size: 24px; margin-top: 10px; animation-delay: .9s; }
+  .lado .pctG { font-size: 96px; margin-top: 20px; animation-delay: 1s; } .lado .pctG small { font-size: 46px; }
+  .lado .votosG { font-size: 24px; animation-delay: 1.1s; }
+  .lado .pos { font-weight: 800; font-size: 22px; letter-spacing: 3px; color: var(--acc); margin-bottom: 10px; animation: sobe .6s .7s both; }
+  .lado.b .pos { color: var(--tag); }
+  .vs { position: absolute; z-index: 3; width: 170px; height: 170px; border-radius: 50%; display: grid; place-items: center;
+    background: var(--bg); border: 5px solid var(--acc); font-weight: 900; font-size: 96px; line-height: 1;
+    animation: vsIn .6s cubic-bezier(.3,1.8,.5,1) 1.05s both, vsPulso 1.8s ease-in-out 1.7s infinite; }
+  .h .vs { left: calc(50% - 85px); top: calc(300px + 300px - 85px); }
+  .v .vs { left: calc(50% - 85px); top: calc(560px + 575px - 85px); }
+  @keyframes vsIn { from { opacity: 0; transform: scale(0) rotate(-90deg); } }
+  @keyframes vsPulso { 50% { box-shadow: 0 0 0 18px rgba(0,162,255,.18), 0 0 60px rgba(0,162,255,.6); } }
+  .faixa { position: absolute; z-index: 3; left: 50%; transform: translateX(-50%); white-space: nowrap;
+    background: #fff; color: var(--bg); font-weight: 900; letter-spacing: 3px; padding: 14px 40px; border-radius: 6px;
+    clip-path: inset(0 0 0 0); animation: faixa .8s cubic-bezier(.2,.8,.2,1) 1.5s both; }
+  .faixa b { color: var(--acc); }
+  .h .faixa { top: 935px; font-size: 34px; }
+  .v .faixa { top: 1745px; font-size: 32px; }
+  @keyframes faixa { from { clip-path: inset(0 50% 0 50%); opacity: 0; } }
+
+  /* aguardando */
+  .espera { position: absolute; left: 0; right: 0; top: 45%; text-align: center; transform: translateY(-50%); }
+  .espera h2 { font-weight: 900; font-size: 64px; letter-spacing: 1px; }
+  .espera p { margin-top: 18px; font-weight: 500; font-size: 28px; color: var(--mut); }
+  .espera i { display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: var(--acc); margin: 30px 8px 0;
+    animation: ponto 1.2s ease-in-out infinite; }
+  .espera i:nth-child(2) { animation-delay: .2s; } .espera i:nth-child(3) { animation-delay: .4s; }
+  @keyframes ponto { 50% { transform: translateY(-14px); opacity: .4; } }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="marca"><img src="logo.png" alt="urb.NEWS Eleições 2026"></div>
+  <div id="cena"></div>
+  <canvas id="confete"></canvas>
+  <div id="rod">Fonte: TSE</div>
+</div>
+
+<script src="dados.js"></script>
+<script>
+// Resultado: mostra só disputas definidas (eleitos ou os dois do 2º turno), em rodízio automático.
+const FORMATO = Q.get('formato') === 'vertical' ? 'v' : 'h';
+const TEMPO = (+Q.get('tempo') || 12) * 1000;
+const FIXA = location.hash.slice(1) || Q.get('aba');
+const stage = document.getElementById('stage');
+stage.className = FORMATO;
+if (SIM) stage.insertAdjacentHTML('beforeend', '<div class="sim">SIMULAÇÃO 2022</div>');
+
+// deputados ficam de fora (dezenas de eleitos)
+const DISPUTAS = ABAS.filter(a => !a.lista && (!FIXA || a.id === FIXA));
+const ehEleito = c => c.st.startsWith('ELEITO') || c.st === 'MATEMATICAMENTE ELEITO';
+
+function definidas() {
+  const out = [];
+  for (const aba of DISPUTAS) {
+    const r = resultado(aba);
+    if (!r) continue;
+    const eleitos = r.cands.filter(ehEleito);
+    const t2 = r.cands.filter(c => c.st === '2º TURNO');
+    if (eleitos.length) out.push({ aba, tipo: 'eleito', cands: eleitos.slice(0, 2), r });
+    else if (t2.length === 2) out.push({ aba, tipo: 't2', cands: t2, r });
+  }
+  return out;
+}
+
+/* ---------- cenas ---------- */
+const ini = n => n.split(' ').map(w => w[0]).slice(0, 2).join('');
+const foto = c => `<div class="foto"><img src="${esc(c.foto)}" alt="" onerror="this.remove()">${esc(ini(c.nome))}</div>`;
+const pct = c => `<div class="pctG"><span class="conta" data-alvo="${c.pct}">0,00</span><small>%</small></div>`;
+const topo = aba => `<div class="topo"><span class="cargo">${aba.titulo}</span><span class="local">${aba.local}</span></div>`;
+
+function cenaEleito(d) {
+  const plural = d.cands.length > 1;
+  return `<div class="raios"></div>${topo(d.aba)}
+    <div class="${plural ? 'n2' : 'n1'}">${d.cands.map(c => `
+      <div class="venc">${foto(c)}
+        <div class="info"><div class="selo">${plural ? 'ELEITOS' : 'ELEITO'}</div>
+          <div class="nomeG">${esc(c.nome)}</div><div class="partG">${esc(c.partido)} · ${esc(c.numero)}</div>
+          ${pct(c)}<div class="votosG">${fint(c.votos)} votos</div></div>
+      </div>`).join('')}</div>`;
+}
+
+function cenaT2(d) {
+  const [a, b] = d.cands;
+  const lado = (c, cls, pos) => `<div class="lado ${cls}">${foto(c)}
+    <div><div class="pos">${pos}</div><div class="nomeG">${esc(c.nome)}</div><div class="partG">${esc(c.partido)} · ${esc(c.numero)}</div>
+    ${pct(c)}<div class="votosG">${fint(c.votos)} votos</div></div></div>`;
+  return `${topo(d.aba)}
+    <div class="duelo">${lado(a, 'a', '1º LUGAR')}${lado(b, 'b', '2º LUGAR')}</div>
+    <div class="vs">×</div>
+    <div class="faixa">VÃO PARA O <b>2º TURNO</b> · 25 DE OUTUBRO</div>`;
+}
+
+function contar() {
+  document.querySelectorAll('.conta').forEach(el => {
+    const alvo = +el.dataset.alvo, t0 = performance.now() + 900, dur = 1400;
+    const passo = t => {
+      const p = Math.min(1, Math.max(0, (t - t0) / dur));
+      el.textContent = fpct(alvo * (1 - Math.pow(1 - p, 3)));
+      if (p < 1) requestAnimationFrame(passo);
+    };
+    requestAnimationFrame(passo);
+  });
+}
+
+/* ---------- confete ---------- */
+const cv = document.getElementById('confete'), cx = cv.getContext('2d');
+let parts = [], animando = false;
+function confete() {
+  cv.width = stage.offsetWidth; cv.height = stage.offsetHeight;
+  const cores = ['#00a2ff', '#ffffff', '#c9c6ca', '#7fd0ff', '#0077cc'];
+  const W = cv.width;
+  for (let i = 0; i < 220; i++) parts.push({
+    x: W * (.2 + Math.random() * .6), y: -20 - Math.random() * 300, vx: (Math.random() - .5) * 9, vy: 2 + Math.random() * 6,
+    w: 10 + Math.random() * 12, h: 6 + Math.random() * 8, r: Math.random() * 6, vr: (Math.random() - .5) * .3,
+    c: cores[i % cores.length], vida: 0,
+  });
+  if (!animando) { animando = true; requestAnimationFrame(quadro); }
+}
+function quadro() {
+  cx.clearRect(0, 0, cv.width, cv.height);
+  parts = parts.filter(p => p.y < cv.height + 40);
+  for (const p of parts) {
+    p.vy += .12; p.vx *= .99; p.x += p.vx; p.y += p.vy; p.r += p.vr;
+    cx.save(); cx.translate(p.x, p.y); cx.rotate(p.r); cx.scale(1, Math.cos(p.r * 2));
+    cx.fillStyle = p.c; cx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); cx.restore();
+  }
+  if (parts.length) requestAnimationFrame(quadro); else { animando = false; cx.clearRect(0, 0, cv.width, cv.height); }
+}
+
+/* ---------- rodízio ---------- */
+const cena = document.getElementById('cena');
+let fila = [], pos = -1, chaveAtual = '', timer = null;
+const chave = d => d ? d.aba.id + d.tipo + d.cands.map(c => c.sq).join() : 'espera';
+
+function mostrar(d) {
+  const k = chave(d);
+  if (k === chaveAtual) return;
+  chaveAtual = k;
+  cena.classList.add('saindo');
+  setTimeout(() => {
+    cena.innerHTML = d ? (d.tipo === 'eleito' ? cenaEleito(d) : cenaT2(d))
+      : `<div class="espera"><h2>AGUARDANDO DEFINIÇÕES</h2><p>Os eleitos e os confrontos de 2º turno aparecem aqui assim que o TSE confirmar.</p><i></i><i></i><i></i></div>`;
+    cena.classList.remove('saindo');
+    if (d) { contar(); if (d.tipo === 'eleito') setTimeout(confete, 1000); }
+  }, chaveAtual === k && cena.innerHTML ? 450 : 0);
+}
+
+function proxima() {
+  fila = definidas();
+  if (!fila.length) return mostrar(null);
+  pos = (pos + 1) % fila.length;
+  mostrar(fila[pos]);
+}
+
+window.aoAtualizar = () => {
+  const n = definidas();
+  const r = n[0] && n[0].r;
+  document.getElementById('rod').textContent = r ? `Fonte: TSE · Última consulta às ${r.consulta}` : 'Fonte: TSE';
+  if (!fila.length && n.length) { pos = -1; proxima(); }        // primeira definição: entra na hora
+  else if (!n.length) mostrar(null);
+  fila = n;
+};
+
+addEventListener('keydown', e => { if (e.key === 'ArrowRight' || e.key === ' ') proxima(); });
+
+function escala() {
+  const s = Math.min(innerWidth / stage.offsetWidth, innerHeight / stage.offsetHeight);
+  stage.style.transform = `scale(${s}) translate(-50%, -50%)`;
+}
+addEventListener('resize', escala);
+escala();
+ciclo(DISPUTAS);
+setInterval(() => ciclo(DISPUTAS), SIM ? 5000 : 15000);
+timer = setInterval(() => { if (fila.length > 1) proxima(); }, TEMPO);
+</script>
+</body>
+</html>
