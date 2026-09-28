@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Comparativo de pesquisas Urbnews</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link crossorigin="anonymous" href="https://fonts.googleapis.com/css2?family=Figtree:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  /* mesma identidade da pesquisa.html (PSD "PESQUISA DATA FOLHA - CEARÁ"), em tabela: candidatos × institutos */
+  :root { --bg2: #011218; --tx: #fff; --mut: #9fb8bf; --acc: #00a2ff; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 100%; height: 100%; background: #000; overflow: hidden; }
+  body { font-family: Figtree, sans-serif; color: var(--tx); }
+  #stage { position: absolute; left: 50%; top: 50%; transform-origin: 0 0; overflow: hidden;
+    background: var(--bg2) url(fundo.jpg) center / cover no-repeat; }
+
+  .titulo { position: absolute; font-weight: 700; line-height: 1; letter-spacing: -1px; text-transform: uppercase; white-space: nowrap;
+    animation: entraEsq .7s cubic-bezier(.2,.8,.2,1) both; }
+  .faixa { position: absolute; left: 0; display: flex; align-items: center; font-weight: 800; text-transform: uppercase;
+    background: linear-gradient(90deg, rgba(20,48,60,.95) 0%, rgba(20,48,60,.85) 60%, rgba(20,48,60,0) 100%);
+    animation: faixa .7s cubic-bezier(.2,.8,.2,1) .25s both; }
+  .logo { position: absolute; animation: surge .7s .2s both; }
+  .logo img { display: block; width: 100%; }
+  @keyframes entraEsq { from { opacity: 0; transform: translateX(-60px); } }
+  @keyframes faixa { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+  @keyframes surge { from { opacity: 0; transform: translateY(-16px); } }
+
+  .cab { position: absolute; display: flex; flex-direction: column; justify-content: center; padding: 0 16px; border-radius: 6px 6px 0 0;
+    background: rgba(20,48,60,.85); border-bottom: 4px solid #2c6488; animation: surge .5s both; }
+  .cab.novo { background: linear-gradient(180deg, #1a5a7c, #123f52); border-bottom-color: var(--acc); }
+  .cab b { font-weight: 900; line-height: 1; text-transform: uppercase; white-space: nowrap; }
+  .cab span { font-weight: 600; color: #d6e6ea; margin-top: 4px; letter-spacing: .5px; }
+
+  .linha { position: absolute; left: 0; right: 0; animation: linha .5s cubic-bezier(.2,.8,.2,1) both; }
+  .linha::after { content: ''; position: absolute; left: var(--x0); right: var(--dx); bottom: 0; height: 1px; background: rgba(255,255,255,.12); }
+  @keyframes linha { from { opacity: 0; transform: translateX(-40px); } }
+  .foto { position: absolute; overflow: hidden; background: #fff; border-radius: 4px; }
+  .foto img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .foto.outro { background: #fff; }
+  .nm { position: absolute; font-weight: 800; line-height: 1.02; text-transform: uppercase; }
+  .nm small { display: block; font-weight: 500; color: #e6eef0; margin-top: 3px; }
+  .bar { position: absolute; border-radius: 0 4px 4px 0; transform-origin: left;
+    background: linear-gradient(90deg, #103d4b 0%, #19566d 45%, #2c6488 100%); animation: cresce .8s cubic-bezier(.2,.8,.2,1) both; }
+  .bar.novo { background: linear-gradient(90deg, #135a7c 0%, #1b7fb4 55%, var(--acc) 100%); }
+  @keyframes cresce { from { transform: scaleX(0); } }
+  .num { position: absolute; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; white-space: nowrap; animation: surge2 .4s both; }
+  .num.nd { color: var(--mut); font-weight: 600; }
+  @keyframes surge2 { from { opacity: 0; } }
+
+  .legal { position: absolute; font-weight: 500; color: rgba(230,238,240,.72); line-height: 1.4; animation: surge .6s 1.6s both; }
+  .legal b { font-weight: 800; color: #fff; }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+
+<script src="comparativos.js?v=20260929a"></script>
+<script src="exportar.js?v=20260929a"></script>
+<script>
+// Comparativo: ?c=<id> (ex.: ce-gov) · ?formato=vertical|feed (padrão horizontal) · ?export=1 (estúdio)
+const Q = new URLSearchParams(location.search);
+const EXPORT = Q.get('export') === '1';
+const C = COMPARATIVOS.find(c => c.id === (Q.get('c') || location.hash.slice(1))) || COMPARATIVOS[0];
+const FORMATO = { vertical: 'v', stories: 'v', feed: 'f' }[Q.get('formato')] || 'h';
+
+// medidas por formato: título, faixa, logo (iguais à pesquisa.html) + tabela
+const L = {
+  h: { W: 1920, H: 1080, tit: [80, 60, 120, 1150], faixa: [196, 62, 700, 105, 36], logo: [70, 105, 380],
+       x0: 104, x1: 1816, nomeW: 520, cabTop: 290, cabH: 84, top: 384, fim: 935, rowMax: 80, instFs: 28, dataFs: 19,
+       numFs: 34, nomeFs: 25, partFs: 17, legal: [26, 104, 14, 1712] },
+  v: { W: 1080, H: 1920, tit: [81, 50, 130, 918], faixa: [230, 66, 700, 50, 36], logo: [226, 60, 300],
+       x0: 50, x1: 1030, nomeW: 380, cabTop: 360, cabH: 96, top: 466, fim: 1650, rowMax: 128, instFs: 22, dataFs: 17,
+       numFs: 34, nomeFs: 25, partFs: 17, legal: [60, 50, 15, 980] },
+  f: { W: 1080, H: 1350, tit: [60, 38, 104, 940], faixa: [170, 56, 600, 50, 30], logo: [150, 50, 240],
+       x0: 50, x1: 1030, nomeW: 380, cabTop: 256, cabH: 84, top: 350, fim: 1180, rowMax: 96, instFs: 21, dataFs: 16,
+       numFs: 30, nomeFs: 22, partFs: 15, legal: [22, 50, 12, 980] },
+}[FORMATO];
+
+const stage = document.getElementById('stage');
+stage.style.width = L.W + 'px'; stage.style.height = L.H + 'px';
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const casas = n => Number.isInteger(n) ? 0 : Math.round(n * 10) === n * 10 ? 1 : 2;
+const fmt = (n, d) => n.toFixed(d).replace('.', ',') + '%';
+const P = C.pesquisas.slice(0, 3);
+
+// tempos: linha i entra em 350 + 90i; barras da coluna j crescem depois
+const T = (i, j) => ({ linha: 350 + i * 90, barra: 700 + i * 90 + j * 160, dur: 800 });
+
+function montar() {
+  const [tl, tt, tfs] = L.tit, [ft, fh, fw, fl, ffs] = L.faixa, [lt, lr, lw] = L.logo;
+  let h = `<div class="titulo" style="left:${tl}px;top:${tt}px;font-size:${tfs}px">PESQUISAS · ${esc(C.cargo)}</div>
+    <div class="faixa" style="top:${ft}px;height:${fh}px;width:${fw}px;padding-left:${fl}px;font-size:${ffs}px">${esc(C.local)} - ${esc(C.turno)}</div>
+    <div class="logo" style="top:${lt}px;right:${lr}px;width:${lw}px"><img src="logo.png" alt="urb.NEWS Eleições 2026"></div>`;
+
+  const gap = 12;
+  const colX0 = L.x0 + L.nomeW + gap;
+  const colW = (L.x1 - colX0 - gap * (P.length - 1)) / P.length;
+  const X = j => colX0 + j * (colW + gap);
+
+  // cabeçalho: instituto + data (o mais recente em destaque)
+  P.forEach((p, j) => {
+    h += `<div class="cab ${j === 0 ? 'novo' : ''}" style="left:${X(j)}px;top:${L.cabTop}px;width:${colW}px;height:${L.cabH}px;animation-delay:${200 + j * 120}ms">
+      <b class="inst" style="font-size:${L.instFs}px">${esc(p.inst)}</b><span style="font-size:${L.dataFs}px">${esc(p.data)}${p.nota ? ' · ' + esc(p.nota) : ''}</span></div>`;
+  });
+
+  const n = C.cands.length;
+  const rowH = Math.min(L.rowMax, (L.fim - L.top) / n);
+  const fotoH = Math.round(rowH - 12), fotoW = Math.round(fotoH * 160 / 180);
+  const max = Math.max(...P.flatMap(p => p.v.filter(x => x != null)), 1);
+  const numW = L.numFs * 2.9;                         // espaço reservado ao número ("74,94%")
+  const barMax = colW - numW - 18;
+
+  C.cands.forEach((c, i) => {
+    const y = L.top + i * rowH;
+    const t = T(i, 0);
+    const outro = c.tipo === 'outro';
+    const foto = outro ? 'pessoa' : c.foto;
+    const nfs = Math.min(L.nomeFs, Math.round(L.nomeFs * 17 / Math.max(10, c.nome.length)));
+    h += `<div class="linha" style="top:${y}px;height:${rowH}px;--x0:${L.x0}px;--dx:${L.W - L.x1}px;animation-delay:${t.linha}ms">
+      <div class="foto ${outro ? 'outro' : ''}" style="left:${L.x0}px;top:${(rowH - fotoH) / 2}px;width:${fotoW}px;height:${fotoH}px">
+        <img src="fotos-pesquisa/${esc(foto)}.jpg?v=2" alt=""></div>
+      <div class="nm" style="left:${L.x0 + fotoW + 16}px;width:${L.nomeW - fotoW - 20}px;top:50%;transform:translateY(-50%);font-size:${nfs}px">
+        ${esc(c.nome)}${c.partido ? `<small style="font-size:${L.partFs}px">${esc(c.partido)}</small>` : ''}</div>`;
+    P.forEach((p, j) => {
+      const v = p.v[i];
+      const tb = T(i, j);
+      const bh = Math.round(Math.min(rowH * 0.46, 40));
+      if (v == null) {
+        h += `<div class="num nd" style="left:${X(j) + 6}px;top:${(rowH - L.numFs) / 2}px;font-size:${L.numFs * .8}px;animation-delay:${tb.barra}ms">—</div>`;
+        return;
+      }
+      const w = Math.max(6, Math.round(v / max * barMax));
+      h += `<div class="bar ${j === 0 ? 'novo' : ''}" style="left:${X(j)}px;top:${(rowH - bh) / 2}px;width:${w}px;height:${bh}px;animation-delay:${tb.barra}ms"></div>
+        <div class="num conta" data-i="${i}" data-j="${j}" data-alvo="${v}" style="left:${X(j) + w + 12}px;top:${(rowH - L.numFs) / 2}px;font-size:${L.numFs}px;animation-delay:${tb.barra}ms">${fmt(v, casas(v))}</div>`;
+    });
+    h += `</div>`;
+  });
+
+  const [lb, ll, lfz, lmax] = L.legal;
+  h += `<div class="legal" style="bottom:${lb}px;left:${ll}px;font-size:${lfz}px;max-width:${lmax}px">` +
+    P.map(p => `<b>${esc(p.inst)} (${esc(p.data)})</b> ${esc(p.legal || '')}`).join('<br>') +
+    `<br>Dados de cada pesquisa conforme divulgação dos institutos · fotos: TSE e Wikimedia Commons (licenças Creative Commons)</div>`;
+  stage.innerHTML = h;
+}
+
+// textos longos diminuem até caber (título e nomes dos institutos)
+function caber(el, larg, min) {
+  const anim = el.style.animation; el.style.animation = 'none';
+  let fs = parseFloat(el.style.fontSize || getComputedStyle(el).fontSize);
+  const r = document.createRange(), k = stage.getBoundingClientRect().width / L.W;
+  const w = () => { r.selectNodeContents(el); return r.getBoundingClientRect().width / k; };
+  while (w() > larg && fs > min) { fs -= 1; el.style.fontSize = fs + 'px'; }
+  void el.offsetWidth; el.style.animation = anim;
+}
+
+function contagens(ms) {
+  let ativo = false;
+  document.querySelectorAll('.conta').forEach(el => {
+    const t = T(+el.dataset.i, +el.dataset.j), alvo = +el.dataset.alvo, d = casas(alvo);
+    const p = Math.min(1, Math.max(0, (ms - t.barra) / t.dur));
+    if (p < 1) ativo = true;
+    el.textContent = fmt(alvo * (1 - Math.pow(1 - p, 3)), d);
+  });
+  return ativo;
+}
+window.__tick = contagens;
+
+function escala() {
+  const s = Math.min(innerWidth / L.W, innerHeight / L.H);
+  stage.style.transform = `scale(${s}) translate(-50%, -50%)`;
+}
+addEventListener('resize', escala);
+escala();
+montar();
+caber(stage.querySelector('.titulo'), L.tit[3], 50);
+stage.querySelectorAll('.cab').forEach(c => caber(c.querySelector('b'), c.clientWidth - 32, 12));
+document.title = `Comparativo · ${C.cargo} ${C.local}`;
+if (EXPORT) Exportar.marcarPronto();
+else {
+  const t0 = performance.now();
+  const loop = () => { if (contagens(performance.now() - t0)) requestAnimationFrame(loop); };
+  requestAnimationFrame(loop);
+}
+</script>
+</body>
+</html>
