@@ -54,8 +54,8 @@
 <body>
 <div id="stage"></div>
 
-<script src="pesquisas.js?v=20260928a"></script>
-<script src="exportar.js?v=20260928a"></script>
+<script src="pesquisas.js?v=20260928b"></script>
+<script src="exportar.js?v=20260928b"></script>
 <script>
 // Pesquisa: ?p=<id da pesquisa> · ?formato=vertical|feed (padrão horizontal) · ?export=1 (estúdio)
 const Q = new URLSearchParams(location.search);
@@ -66,13 +66,13 @@ const FORMATO = { vertical: 'v', stories: 'v', feed: 'f' }[Q.get('formato')] || 
 // medidas por formato (px do PSD no horizontal e no vertical)
 const L = {
   h: { W: 1920, H: 1080, tit: [105, 78, 150, 1250], faixa: [232, 70, 700, 105, 40], logo: [80, 105, 400],
-       linhas: [{ base: 822, max: 292 }], porLinha: 99, x0: 104, x1: 1816, colW: 160, fotoH: 127, minBar: 72,
+       linhas: [{ base: 830, max: 280 }], porLinha: 99, x0: 104, x1: 1816, colW: 160, fotoH: 180, minBar: 72,
        pctFs: 48, nomeFs: 26, partFs: 21, fonte: [36, 104, 22], legal: [36, 104, 15, 1150] },
   v: { W: 1080, H: 1920, tit: [81, 50, 150, 918], faixa: [266, 70, 700, 81, 40], logo: [246, 108, 334],
-       linhas: [{ base: 981, max: 298 }, { base: 1506, max: 240 }], porLinha: 4, x0: 128, x1: 952, colW: 160, fotoH: 127, minBar: 72,
+       linhas: [{ base: 985, max: 290 }, { base: 1520, max: 200 }], porLinha: 4, x0: 128, x1: 952, colW: 160, fotoH: 180, minBar: 72,
        pctFs: 48, nomeFs: 26, partFs: 21, fonte: [40, 99, 22], legal: [86, 99, 15, 882] },
   f: { W: 1080, H: 1350, tit: [70, 40, 130, 940], faixa: [196, 60, 600, 70, 34], logo: [176, 70, 250],
-       linhas: [{ base: 690, max: 230 }, { base: 1115, max: 170 }], porLinha: 4, x0: 110, x1: 970, colW: 150, fotoH: 119, minBar: 66,
+       linhas: [{ base: 700, max: 225 }, { base: 1140, max: 150 }], porLinha: 4, x0: 110, x1: 970, colW: 150, fotoH: 169, minBar: 66,
        pctFs: 44, nomeFs: 22, partFs: 18, fonte: [32, 70, 19], legal: [70, 70, 13, 940] },
 }[FORMATO];
 
@@ -136,7 +136,7 @@ function montar() {
     const topo = linha.base - bar;
     const t = T(i);
     const foto = it.tipo === 'outro' ? 'pessoa' : it.foto;
-    const imagem = foto ? `<img src="fotos-pesquisa/${esc(foto)}.jpg?v=1" alt="">` : `<div class="ini">${esc(iniciais(it.nome))}</div>`;
+    const imagem = foto ? `<img src="fotos-pesquisa/${esc(foto)}.jpg?v=2" alt="">` : `<div class="ini">${esc(iniciais(it.nome))}</div>`;
     h += `<div class="col" style="left:${x}px;top:0;width:${L.colW}px;height:${L.H}px">
       <div class="barra" style="top:${topo}px;bottom:${L.H - linha.base}px;animation-delay:${t.barra}ms"></div>
       <div class="foto" style="top:${topo - L.fotoH - 10}px;height:${L.fotoH}px;animation-delay:${t.barra + 350}ms">
