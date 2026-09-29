@@ -46,10 +46,10 @@
 <div id="stage"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script src="sync.js?v=20260929c"></script>
-<script src="dados.js?v=20260929c"></script>
-<script src="pesquisas.js?v=20260929c"></script>
-<script src="exportar.js?v=20260929c"></script>
+<script src="sync.js?v=20260929d"></script>
+<script src="dados.js?v=20260929d"></script>
+<script src="pesquisas.js?v=20260929d"></script>
+<script src="exportar.js?v=20260929d"></script>
 <script>
 // Tarja (lower third) para o vMix, fundo transparente.
 //   ?tipo=apuracao#ce  → os 2 mais votados da disputa (TSE, atualiza sozinha; &sala= segue o controle do celular; &sim=1 simulação)
@@ -75,7 +75,7 @@ function daApuracao() {
   const tag = c => c.st.startsWith('ELEITO') ? 'ELEITO' : c.st === '2º TURNO' ? '2º TURNO' : '';
   return {
     aba, casas: 2,
-    cands: r.cands.slice(0, 2).map(c => ({ nome: c.nome, pct: c.pct, sub: `${c.votos.toLocaleString('pt-BR')} VOTOS`, foto: c.foto, tag: tag(c) })),
+    cands: r.cands.slice(0, 2).map(c => ({ nome: c.nome, pct: c.pct, sub: c.votos ? `${c.votos.toLocaleString('pt-BR')} VOTOS` : '', foto: c.foto, tag: tag(c) })),
     letreiro: `APURAÇÃO DE VOTOS EM TEMPO REAL · ${rot}${r.turno === 2 ? ' · 2º TURNO' : ''} · ${fnum(r.secoes, 2)}% DAS SEÇÕES APURADAS · FONTE: TSE`,
   };
 }

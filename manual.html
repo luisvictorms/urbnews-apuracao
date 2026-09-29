@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#07252d">
+<title>Plano B · digitação manual · Urbnews</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rethink+Sans:wght@400..800&display=swap" rel="stylesheet">
+<style>
+  :root { --bg: #07252d; --bg2: #011218; --acc: #aefd04; --escuro: #012128; --tx: #fff; --mut: #9fb2bc; --card: rgba(255,255,255,.06); --line: rgba(255,255,255,.16); --verm: #ff6b6b; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Rethink Sans", sans-serif; color: var(--tx); min-height: 100vh;
+    background: radial-gradient(ellipse at 30% 0%, #173541, var(--bg) 45%, var(--bg2));
+    padding: max(14px, env(safe-area-inset-top)) 14px max(24px, env(safe-area-inset-bottom)); }
+  header { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  header img { height: 46px; }
+  header b { font-size: 13px; letter-spacing: 2px; color: var(--mut); text-align: right; }
+  .rot { margin: 16px 0 6px; font-size: 12px; font-weight: 700; letter-spacing: 2.5px; color: var(--mut); }
+  select, input { font: inherit; color: var(--tx); background: var(--card); border: 1.5px solid var(--line); border-radius: 8px; padding: 11px 10px; width: 100%; min-width: 0; }
+  select option, select optgroup { color: #000; }
+  input:focus, select:focus { outline: none; border-color: var(--acc); }
+  .lin2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .noar { margin-top: 16px; display: flex; align-items: center; gap: 12px; padding: 14px; border: 2px solid var(--line); border-radius: 12px; background: var(--card); cursor: pointer; }
+  .noar input { width: 26px; height: 26px; accent-color: var(--acc); flex: none; }
+  .noar span { font-weight: 700; line-height: 1.3; }
+  .noar small { display: block; font-weight: 500; color: var(--mut); font-size: 12px; }
+  .noar.on { border-color: var(--acc); background: rgba(174,253,4,.12); }
+  .cand { border: 1.5px solid var(--line); border-radius: 10px; padding: 10px; margin-bottom: 8px; background: var(--card); }
+  .cand .top { display: grid; grid-template-columns: 1fr 88px 34px; gap: 6px; }
+  .cand .num { display: grid; grid-template-columns: 1fr 96px 1fr; gap: 6px; margin-top: 6px; }
+  .cand button.x { background: none; border: 1.5px solid var(--line); color: var(--verm); border-radius: 8px; font-size: 16px; }
+  .cand input::placeholder { color: #6f8791; }
+  button.b { font: inherit; font-weight: 700; color: var(--tx); background: var(--card); border: 1.5px solid var(--line); border-radius: 10px; padding: 12px; width: 100%; cursor: pointer; }
+  button.b:active { transform: scale(.98); }
+  .acoes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 4px; }
+  button.salvar { margin-top: 14px; background: var(--acc); color: var(--escuro); border-color: var(--acc); font-size: 18px; padding: 16px; }
+  .msg { margin-top: 12px; font-size: 14px; line-height: 1.45; color: var(--mut); min-height: 20px; }
+  .msg.ok { color: var(--acc); } .msg.erro { color: var(--verm); }
+  .aviso { margin-top: 30px; padding: 18px; border: 2px solid #d29922; border-radius: 12px; line-height: 1.5; }
+  .soma { font-size: 12px; color: var(--mut); margin-top: 6px; text-align: right; }
+</style>
+</head>
+<body>
+<header><img src="logo.png" alt="urb.NEWS Eleições 2026"><b>PLANO B<br>DIGITAÇÃO MANUAL</b></header>
+<div id="app"></div>
+
+<script src="dados.js?v=20260929d"></script>
+<script src="pesquisas.js?v=20260929d"></script>
+<script>
+// Plano B: se o TSE falhar na live, digite aqui os números (do app/site oficial) e ligue "NO AR".
+// As telas (apuração, vencedores, tarjas) passam a usar estes dados na próxima atualização (até 15 s), sem trocar link no vMix.
+const CHAVE = Q.get('sala');
+const app = document.getElementById('app');
+const H = { apikey: SB_KEY, 'Content-Type': 'application/json' };
+let linhas = [];
+
+if (!CHAVE) {
+  app.innerHTML = `<div class="aviso">Falta o código da sala no link.<br>Use o endereço completo: <b>manual.html?sala=CÓDIGO</b> (o mesmo código do controle da apuração).</div>`;
+} else {
+  app.innerHTML = `
+    <div class="rot">DISPUTA</div>
+    <select id="aba">${Object.keys(GRUPOS).map(g => {
+      const itens = ABAS.filter(a => a.grupo === g);
+      const ops = itens.map(a => `<option value="${a.id}">${a.id === 'br' ? 'Presidente · Brasil' : a.titulo.charAt(0) + a.titulo.slice(1).toLowerCase() + ' · ' + a.local}</option>`).join('');
+      return g === 'pres' ? ops : `<optgroup label="${GRUPOS[g]}">${ops}</optgroup>`;
+    }).join('')}</select>
+    <div class="lin2">
+      <div><div class="rot">TURNO</div><select id="turno"><option value="1">1º turno</option><option value="2">2º turno</option></select></div>
+      <div><div class="rot">SEÇÕES APURADAS %</div><input id="pst" inputmode="decimal" placeholder="ex.: 87,32"></div>
+    </div>
+    <label class="noar" id="noarBox"><input type="checkbox" id="ativo"><span>NO AR: usar estes números nesta disputa<small>Desligado = as telas voltam a usar o TSE.</small></span></label>
+    <div class="rot">CANDIDATOS <span style="letter-spacing:0;font-weight:500">(nome · partido · votos · % · situação)</span></div>
+    <div id="lista"></div>
+    <div class="soma" id="soma"></div>
+    <div class="acoes"><button class="b" id="mais">+ candidato</button><button class="b" id="calc">% pelos votos</button></div>
+    <button class="b salvar" id="salvar">SALVAR</button>
+    <div class="msg" id="msg"></div>`;
+  const $ = id => document.getElementById(id);
+  $('turno').value = String(TURNO);
+
+  // candidatos sugeridos: os que aparecem nas pesquisas desta disputa (com foto); deputados começam em branco
+  function sugeridos(aba) {
+    if (aba.lista) return Array.from({ length: 10 }, () => ({ nm: '', cc: '' }));
+    const chave = aba.id === 'br' ? '-br-pres-' : aba.grupo === 'sen' ? `-${aba.abr}-sen-` : `-${aba.abr}-gov-`;
+    const vistos = new Map();
+    PESQUISAS.filter(p => p.id.includes(chave)).forEach(p => p.itens.filter(i => i.tipo !== 'outro').forEach(i => {
+      const v = vistos.get(i.nome);
+      if (!v || i.pct > v.pct) vistos.set(i.nome, { nm: i.nome, cc: i.partido || '', pct: i.pct, foto: i.foto ? `fotos-pesquisa/${i.foto}.jpg?v=2` : '' });
+    }));
+    const l = [...vistos.values()].sort((a, b) => b.pct - a.pct).map(({ pct, ...c }) => c);
+    return l.length ? l : Array.from({ length: 4 }, () => ({ nm: '', cc: '' }));
+  }
+
+  const pv = s => parseFloat(String(s || '').replace(/\./g, '').replace(',', '.'));
+  const pp = s => parseFloat(String(s || '').replace(',', '.'));
+  function desenhar() {
+    $('lista').innerHTML = linhas.map((c, i) => `<div class="cand" data-i="${i}">
+      <div class="top"><input data-k="nm" value="${esc(c.nm)}" placeholder="Nome na urna"><input data-k="cc" value="${esc(c.cc)}" placeholder="Partido"><button class="x" data-x="${i}">✕</button></div>
+      <div class="num"><input data-k="vap" value="${esc(c.vap || '')}" inputmode="numeric" placeholder="Votos"><input data-k="pvap" value="${esc(c.pvap || '')}" inputmode="decimal" placeholder="%">
+        <select data-k="st"><option value="">—</option><option ${c.st === 'Eleito' ? 'selected' : ''}>Eleito</option><option ${c.st === '2º turno' ? 'selected' : ''}>2º turno</option></select></div>
+    </div>`).join('');
+    somar();
+  }
+  function somar() {
+    const t = linhas.reduce((s, c) => s + (pp(c.pvap) || 0), 0);
+    $('soma').textContent = t ? `soma dos %: ${t.toLocaleString('pt-BR', { maximumFractionDigits: 2 })}%` : '';
+  }
+  $('lista').addEventListener('input', e => {
+    const k = e.target.dataset.k, i = +e.target.closest('.cand').dataset.i;
+    if (k) { linhas[i][k] = e.target.value; somar(); }
+  });
+  $('lista').addEventListener('change', e => { const k = e.target.dataset.k; if (k === 'st') linhas[+e.target.closest('.cand').dataset.i].st = e.target.value; });
+  $('lista').addEventListener('click', e => { const x = e.target.dataset.x; if (x !== undefined) { linhas.splice(+x, 1); desenhar(); } });
+  $('mais').onclick = () => { linhas.push({ nm: '', cc: '' }); desenhar(); };
+  $('calc').onclick = () => {
+    const tot = linhas.reduce((s, c) => s + (pv(c.vap) || 0), 0);
+    if (!tot) return msg('Preencha os votos primeiro.', 'erro');
+    linhas.forEach(c => { c.pvap = pv(c.vap) ? (pv(c.vap) / tot * 100).toFixed(2).replace('.', ',') : ''; });
+    desenhar(); msg('% calculado sobre a soma dos votos digitados (confira com o total de válidos).');
+  };
+  $('ativo').onchange = () => $('noarBox').classList.toggle('on', $('ativo').checked);
+  function msg(t, cls = '') { $('msg').textContent = t; $('msg').className = 'msg ' + cls; }
+
+  // carrega o que já está salvo para a disputa/turno (ou sugere os candidatos)
+  async function carregar() {
+    const aba = ABAS.find(a => a.id === $('aba').value), turno = +$('turno').value;
+    msg('Carregando…');
+    try {
+      const r = await fetch(`${SB}/rest/v1/manual?aba=eq.${aba.id}&turno=eq.${turno}&select=ativo,raw,atualizado`, { headers: H, cache: 'no-store' }).then(r => r.json());
+      if (r[0]) {
+        const raw = r[0].raw;
+        linhas = raw.cand.map(c => ({ nm: c.nm, cc: c.cc, vap: c.vap && c.vap !== '0' ? Number(c.vap).toLocaleString('pt-BR') : '', pvap: c.pvap, st: c.st, foto: c.foto }));
+        $('pst').value = raw.pst || ''; $('ativo').checked = r[0].ativo;
+        msg(`Salvo às ${new Date(r[0].atualizado).toLocaleTimeString('pt-BR')} · ${r[0].ativo ? 'NO AR' : 'desligado (telas usam o TSE)'}`, r[0].ativo ? 'ok' : '');
+      } else {
+        linhas = sugeridos(aba); $('pst').value = ''; $('ativo').checked = false;
+        msg('Nada salvo ainda para esta disputa. Candidatos sugeridos pelas pesquisas.');
+      }
+    } catch (e) { msg('Sem conexão com o servidor: ' + e.message, 'erro'); }
+    $('noarBox').classList.toggle('on', $('ativo').checked);
+    desenhar();
+  }
+  $('aba').onchange = carregar; $('turno').onchange = carregar;
+
+  $('salvar').onclick = async () => {
+    const validos = linhas.filter(c => c.nm.trim());
+    if (!validos.length) return msg('Digite pelo menos um candidato.', 'erro');
+    if (!validos.some(c => pp(c.pvap) > 0 || pv(c.vap) > 0)) return msg('Digite votos ou % de pelo menos um candidato.', 'erro');   // em branco = 0
+    const tot = validos.reduce((s, c) => s + (pv(c.vap) || 0), 0);
+    const raw = {
+      pst: $('pst').value.trim() ? pp($('pst').value).toFixed(2).replace('.', ',') : '0,00',
+      ht: new Date().toLocaleTimeString('pt-BR'),
+      cand: validos.map((c, i) => {
+        const vap = pv(c.vap) || 0;
+        const pct = c.pvap !== '' && c.pvap != null && !isNaN(pp(c.pvap)) ? pp(c.pvap) : (tot ? vap / tot * 100 : 0);
+        return { seq: String(i + 1), sqcand: 'm' + i, n: '', nm: c.nm.trim().toUpperCase(), cc: c.cc.trim().toUpperCase(),
+          vap: String(vap), pvap: pct.toFixed(2).replace('.', ','), st: c.st || '', e: c.st ? 's' : 'n', foto: c.foto || '' };
+      }),
+    };
+    $('salvar').disabled = true; msg('Salvando…');
+    try {
+      const r = await fetch(`${SB}/rest/v1/rpc/salvar_manual`, { method: 'POST', headers: H,
+        body: JSON.stringify({ p_chave: CHAVE, p_aba: $('aba').value, p_turno: +$('turno').value, p_ativo: $('ativo').checked, p_raw: raw }) });
+      if (!r.ok) throw new Error(r.status === 401 || (await r.text()).includes('chave') ? 'código da sala inválido' : 'erro ' + r.status);
+      msg(`Salvo às ${new Date().toLocaleTimeString('pt-BR')} · ${$('ativo').checked ? 'NO AR — as telas mudam em até 15 s' : 'desligado (telas usam o TSE)'}`, $('ativo').checked ? 'ok' : '');
+      if (navigator.vibrate) navigator.vibrate(20);
+    } catch (e) { msg('Não salvou: ' + e.message, 'erro'); }
+    $('salvar').disabled = false;
+  };
+  carregar();
+}
+</script>
+</body>
+</html>

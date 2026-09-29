@@ -80,7 +80,7 @@ function render(trocouAba) {
       <div><div class="nome">${esc(c.nome)}</div>
         <div class="part">${esc(c.partido)} · ${esc(c.numero)}${st}</div>
         <div class="barra"><b style="width:${c.pct}%"></b></div></div>
-      <div class="num"><div class="pct">${int}<small>,${dc}%</small></div><div class="votos">${fint(c.votos)} votos</div></div>
+      <div class="num"><div class="pct">${int}<small>,${dc}%</small></div><div class="votos">${c.votos ? fint(c.votos) + ' votos' : ''}</div></div>
     </div>`;
   };
   const mesmos = !trocouAba && box.dataset.aba === aba.id &&

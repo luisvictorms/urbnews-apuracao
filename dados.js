@@ -127,6 +127,20 @@ function simular(raw, aba) {
   return { ...raw, cand, pst: (p * 100).toFixed(2).replace('.', ','), ht: hora };
 }
 
+// Plano B: resultados digitados no manual.html (Supabase). Disputa com dados manuais LIGADOS usa eles no lugar do TSE.
+const SB = 'https://oemcxsuqbxhxxzubahzr.supabase.co', SB_KEY = 'sb_publishable_ZMNIN9uK_U4nc7hWkw8_wg_iPTqnksV';
+let manuais = {};
+async function buscarManuais() {
+  if (SIM) return;
+  try {
+    const r = await fetch(`${SB}/rest/v1/manual?ativo=eq.true&select=aba,turno,raw,atualizado`, { headers: { apikey: SB_KEY }, cache: 'no-store' });
+    if (!r.ok) return;
+    const m = {};
+    for (const x of await r.json()) m[x.aba + ':' + x.turno] = x;
+    manuais = m;
+  } catch (e) { console.warn('manual', e); }
+}
+
 const cacheSim = {};
 async function atualizar(aba) {
   try {
@@ -136,6 +150,8 @@ async function atualizar(aba) {
       if (!(k in cacheSim)) cacheSim[k] = await buscar(aba, turno);
       if (!cacheSim[k] && turno === 2) { turno = 1; const k1 = aba.id + 1; cacheSim[k1] = cacheSim[k1] || await buscar(aba, 1); raw = cacheSim[k1]; }
       else raw = cacheSim[k] && simular(cacheSim[k], aba);
+    } else if (manuais[aba.id + ':' + turno]) {
+      raw = { ...manuais[aba.id + ':' + turno].raw, manual: true };
     } else {
       raw = await buscar(aba, turno);
       // estado sem 2º turno: mostra o resultado final do 1º
@@ -146,7 +162,7 @@ async function atualizar(aba) {
 }
 
 async function ciclo(abas = ABAS) {
-  await descobrir();
+  await Promise.all([descobrir(), buscarManuais()]);
   await Promise.all(abas.map(atualizar));
   if (window.aoAtualizar) aoAtualizar();
 }
@@ -156,10 +172,10 @@ function resultado(aba) {
   const d = dados[aba.id];
   if (!d) return null;
   const raw = d.raw;
-  const cands = [...raw.cand].sort((a, b) => num(b.vap) - num(a.vap) || num(a.seq) - num(b.seq)).map(c => ({
+  const cands = [...raw.cand].sort((a, b) => num(b.vap) - num(a.vap) || pnum(b.pvap) - pnum(a.pvap) || num(a.seq) - num(b.seq)).map(c => ({
     sq: c.sqcand, nome: nomeBonito(c.nm, dec(c.cc).split(' - ')[0].trim()), numero: c.n, partido: dec(c.cc).split(' - ')[0].trim(),
-    votos: num(c.vap), pct: pnum(c.pvap), st: dec(c.st).toUpperCase(), foto: urlFoto(aba, d.turno, c.sqcand),
+    votos: num(c.vap), pct: pnum(c.pvap), st: dec(c.st).toUpperCase(), foto: raw.manual ? (c.foto || '') : urlFoto(aba, d.turno, c.sqcand),
   }));
-  return { cands, secoes: pnum(raw.pst), consulta: new Date(d.ok).toLocaleTimeString('pt-BR'), turno: d.turno };
+  return { cands, secoes: pnum(raw.pst), consulta: new Date(d.ok).toLocaleTimeString('pt-BR'), turno: d.turno, manual: !!raw.manual };
 }
 
