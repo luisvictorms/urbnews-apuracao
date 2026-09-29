@@ -1,0 +1,39 @@
+# Vigia o site de resultados do TSE (fora do ar desde 29/09/2026: "Nova versão em breve").
+# De hora em hora testa o arquivo de configuração; quando voltar, abre uma issue (o GitHub avisa por e-mail).
+name: Vigia TSE
+on:
+  schedule:
+    - cron: '17 * * * *'
+  workflow_dispatch:
+permissions:
+  issues: write
+jobs:
+  vigiar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Testa resultados.tse.jus.br
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          URL=https://resultados.tse.jus.br/oficial/comum/config/ele-c.json
+          code=$(curl -s -m 30 -o cfg.json -w '%{http_code}' "$URL" || true)
+          tipo=$(file -b --mime-type cfg.json 2>/dev/null || true)
+          echo "HTTP $code ($tipo)"
+          if [ "$code" != 200 ] || ! head -c 200 cfg.json | grep -q '"c"'; then
+            echo "TSE ainda fora (ou formato novo sem o campo c)."
+            # se voltou com outro formato, também avisa
+            if [ "$code" = 200 ]; then TITULO="TSE voltou, mas o ele-c.json mudou de formato"; else exit 0; fi
+          else
+            TITULO="TSE voltou: resultados.tse.jus.br no ar"
+          fi
+          if gh issue list --state all --search "TSE voltou in:title" --json number --jq 'length' | grep -qv '^0$'; then
+            echo "Aviso já enviado."; exit 0
+          fi
+          ciclo=$(grep -o '"c" *: *"[^"]*"' cfg.json | head -1)
+          gh issue create --title "$TITULO" --body "O site de resultados do TSE respondeu $code em $(date -u '+%d/%m %H:%M UTC').
+
+          Config: \`$ciclo\`
+          $URL
+
+          Próximo passo: conferir se a apuração 2026 do site carrega (endereços e formato dos arquivos) antes da live de 04/10."
