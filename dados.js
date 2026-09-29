@@ -72,11 +72,15 @@ const nomeBonito = (s, sigla = '') => dec(s).toLowerCase().split(/\s+/)
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
 function eleDe(aba, turno) { return (codigos[turno] || {})[aba.cargo === 1 ? 'federal' : 'estadual']; }
+// simulação: cópia dos arquivos de 2022 no próprio site (sim2022/) — o TSE tirou 2022 do ar em set/2026
 function urlRes(aba, turno) {
   const e = eleDe(aba, turno);
-  return `${TSE}/oficial/${CICLO}/${e}/dados-simplificados/${aba.abr}/${aba.abr}-c${String(aba.cargo).padStart(4, '0')}-e${String(e).padStart(6, '0')}-r.json`;
+  const arq = `${aba.abr}-c${String(aba.cargo).padStart(4, '0')}-e${String(e).padStart(6, '0')}-r.json`;
+  return SIM ? `sim2022/${e}/${aba.abr}/${arq}` : `${TSE}/oficial/${CICLO}/${e}/dados-simplificados/${aba.abr}/${arq}`;
 }
-function urlFoto(aba, turno, sq) { return `${TSE}/oficial/${CICLO}/${eleDe(aba, turno)}/fotos/${aba.abr}/${sq}.jpeg`; }
+function urlFoto(aba, turno, sq) {
+  return SIM ? `sim2022/fotos/${aba.abr}/${sq}.jpeg` : `${TSE}/oficial/${CICLO}/${eleDe(aba, turno)}/fotos/${aba.abr}/${sq}.jpeg`;
+}
 
 /* ======================= TSE ======================= */
 async function descobrir() {
