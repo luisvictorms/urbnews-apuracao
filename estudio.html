@@ -61,9 +61,10 @@
     <button data-v="resultado">Vencedores<small>eleito / 2º turno</small></button>
     <button data-v="pesquisa">Pesquisa<small>Quaest / Datafolha</small></button>
     <button data-v="comparativo">Comparativo<small>várias pesquisas</small></button>
+    <button data-v="tarja">Tarjas vMix<small>fundo transparente</small></button>
   </div>
 
-  <div class="rot">FORMATO</div>
+  <div class="rot" id="rotFormato">FORMATO</div>
   <div class="seg c3" id="formato">
     <button data-v="h">Horizontal<small>1920×1080</small></button>
     <button data-v="v">Stories<small>1080×1920</small></button>
@@ -102,24 +103,32 @@
   <div class="quadro" id="quadro"><iframe id="prev" title="Pré-visualização"></iframe></div>
 </main>
 
-<script src="dados.js?v=20260929b"></script>
-<script src="pesquisas.js?v=20260929b"></script>
-<script src="comparativos.js?v=20260929b"></script>
+<script src="dados.js?v=20260929c"></script>
+<script src="pesquisas.js?v=20260929c"></script>
+<script src="comparativos.js?v=20260929c"></script>
 <script>
 // Estúdio: escolhe tipo/formato/disputa, mostra a prévia e exporta vídeo (10 s) ou o quadro final.
 const TAM = { h: [1920, 1080], v: [1080, 1920], f: [1080, 1350] };
 const NOME_FMT = { h: 'horizontal', v: 'stories', f: 'feed' };
-const est = { tipo: 'resultado', formato: 'f', disputa: 'br', fonte: 'sim', turno: '', pesquisa: PESQUISAS[0].id, comparativo: COMPARATIVOS[0].id };
+const est = { tipo: 'resultado', formato: 'f', disputa: 'br', fonte: 'sim', turno: '', pesquisa: PESQUISAS[0].id, comparativo: COMPARATIVOS[0].id, tarja: 'a:br' };
 try { Object.assign(est, JSON.parse(localStorage.getItem('estudio') || '{}')); } catch (e) {}
 const $ = id => document.getElementById(id);
 
-const VERSAO = '20260929b';   // muda a cada publicação: as telas nunca vêm do cache antigo
+const VERSAO = '20260929c';   // muda a cada publicação: as telas nunca vêm do cache antigo
 function urlDe(extra = {}) {
   const q = new URLSearchParams();
   q.set('v', VERSAO);
   if (est.fonte === 'sim') q.set('sim', '1');
   if (est.turno) q.set('turno', est.turno);
   let pag;
+  if (est.tipo === 'tarja') {
+    const [t, id] = est.tarja.split(':');
+    const qt = new URLSearchParams({ v: VERSAO, tipo: t === 'p' ? 'pesquisa' : 'apuracao' });
+    if (t === 'p') qt.set('p', id);
+    else { if (est.fonte === 'sim') qt.set('sim', '1'); if (est.turno) qt.set('turno', est.turno); }
+    for (const [k, v] of Object.entries(extra)) qt.set(k, v);
+    return `tarja.html?${qt}${t === 'p' ? '' : '#' + id}`;
+  }
   if (est.tipo === 'comparativo') {
     const qp = new URLSearchParams({ v: VERSAO, c: est.comparativo });
     if (est.formato !== 'h') qp.set('formato', est.formato === 'v' ? 'vertical' : 'feed');
@@ -141,9 +150,24 @@ function urlDe(extra = {}) {
 
 function montarDisputas() {
   const sel = $('disputa');
-  const pesq = est.tipo === 'pesquisa', comp = est.tipo === 'comparativo';
-  $('rotDisputa').textContent = pesq ? 'PESQUISA' : 'DISPUTA';
-  $('blocoDados').style.display = pesq || comp ? 'none' : '';
+  const pesq = est.tipo === 'pesquisa', comp = est.tipo === 'comparativo', tarja = est.tipo === 'tarja';
+  $('rotDisputa').textContent = pesq ? 'PESQUISA' : tarja ? 'TARJA' : 'DISPUTA';
+  $('blocoDados').style.display = pesq || comp || (tarja && est.tarja.startsWith('p:')) ? 'none' : '';
+  // tarja: só horizontal (1920x1080, fundo transparente); vídeo MP4 não tem transparência → só PNG
+  if (tarja) est.formato = 'h';
+  ['rotFormato', 'formato'].forEach(id => { $(id).style.display = tarja ? 'none' : ''; });
+  $('bVideo').style.display = tarja ? 'none' : '';
+  $('bImg').textContent = tarja ? '⬇ Baixar PNG transparente' : '⬇ Baixar imagem final (PNG)';
+  if (tarja) {
+    const disp = ABAS.filter(a => !a.lista);
+    const ops = disp.map(a => `<option value="a:${a.id}">Apuração · ${a.id === 'br' ? 'Presidente · Brasil' : a.titulo.charAt(0) + a.titulo.slice(1).toLowerCase() + ' · ' + a.local}</option>`).join('');
+    const grupos = [...new Set(PESQUISAS.map(p => p.cargo + ' · ' + p.local))];
+    sel.innerHTML = `<optgroup label="APURAÇÃO (TSE · 2 mais votados)">${ops}</optgroup>` + grupos.map(g => `<optgroup label="PESQUISA · ${g}">${PESQUISAS
+      .filter(p => p.cargo + ' · ' + p.local === g).map(p => `<option value="p:${p.id}">${p.instituto} · ${p.divulgacao.toLowerCase()}</option>`).join('')}</optgroup>`).join('');
+    if (![...sel.options].some(o => o.value === est.tarja)) est.tarja = 'a:br';
+    sel.value = est.tarja;
+    return;
+  }
   if (comp) {
     if (!COMPARATIVOS.some(c => c.id === est.comparativo)) est.comparativo = COMPARATIVOS[0].id;
     sel.innerHTML = COMPARATIVOS.map(c => `<option value="${c.id}">${c.cargo.charAt(0) + c.cargo.slice(1).toLowerCase()} · ${c.local} (${c.pesquisas.slice(0, 3).map(p => p.inst.split(' ')[0].toLowerCase()).join(' × ')})</option>`).join('');
@@ -175,7 +199,7 @@ function atualizar() {
     $(k).querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.v === est[k]));
   montarDisputas();
   const u = urlDe();
-  $('prev').src = u;
+  $('prev').src = est.tipo === 'tarja' ? urlDe({ fundo: '1' }) : u;   // prévia da tarja com xadrez (o link do vMix fica transparente)
   $('bAbrir').href = u;
   encaixar();
 }
@@ -191,8 +215,8 @@ function encaixar() {
 
 for (const k of ['tipo', 'formato', 'fonte', 'turno'])
   $(k).addEventListener('click', e => { const b = e.target.closest('button'); if (b) { est[k] = b.dataset.v; atualizar(); } });
-$('disputa').addEventListener('change', e => { if (est.tipo === 'pesquisa') est.pesquisa = e.target.value; else if (est.tipo === 'comparativo') est.comparativo = e.target.value; else est.disputa = e.target.value; atualizar(); });
-$('bRep').addEventListener('click', () => { $('prev').src = 'about:blank'; setTimeout(() => { $('prev').src = urlDe(); }, 50); });
+$('disputa').addEventListener('change', e => { if (est.tipo === 'pesquisa') est.pesquisa = e.target.value; else if (est.tipo === 'tarja') est.tarja = e.target.value; else if (est.tipo === 'comparativo') est.comparativo = e.target.value; else est.disputa = e.target.value; atualizar(); });
+$('bRep').addEventListener('click', () => { $('prev').src = 'about:blank'; setTimeout(() => { $('prev').src = urlDe(est.tipo === 'tarja' ? { fundo: '1' } : {}); }, 50); });
 addEventListener('resize', encaixar);
 
 /* ---------- exportação ---------- */
@@ -219,6 +243,7 @@ async function abrirExport() {
 }
 
 function nomeArquivo(ext) {
+  if (est.tipo === 'tarja') return `urbnews-tarja-${est.tarja.replace(':', '-')}${est.tarja.startsWith('a:') && est.fonte === 'sim' ? '-simulacao' : ''}.${ext}`;
   if (est.tipo === 'comparativo') return `urbnews-comparativo-${est.comparativo}-${NOME_FMT[est.formato]}.${ext}`;
   if (est.tipo === 'pesquisa') return `urbnews-pesquisa-${est.pesquisa}-${NOME_FMT[est.formato]}.${ext}`;
   const a = ABAS.find(x => x.id === est.disputa);
