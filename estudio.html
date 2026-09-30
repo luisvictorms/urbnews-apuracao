@@ -37,6 +37,19 @@
     text-align: center; text-decoration: none; border: 1.5px solid var(--line); background: var(--card); color: var(--tx); }
   .acoes .prim { background: var(--acc); border-color: var(--acc); color: var(--escuro); }
   .acoes button:disabled { opacity: .45; cursor: wait; }
+  #lote { margin-top: 6px; }
+  .lote-at { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-bottom: 8px; }
+  .lote-at button { font: inherit; font-size: 12px; font-weight: 700; padding: 7px 4px; border-radius: 6px; cursor: pointer;
+    border: 1.5px solid var(--line); background: var(--card); color: var(--tx); }
+  .lote-grupo { margin: 8px 0 4px; font-size: 10.5px; font-weight: 700; letter-spacing: 2px; color: var(--mut); }
+  .lote-lista { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+  .ck { display: flex; align-items: center; gap: 7px; padding: 6px 8px; border: 1.5px solid var(--line); border-radius: 6px;
+    background: var(--card); cursor: pointer; font-size: 12.5px; font-weight: 700; line-height: 1.2; min-width: 0; }
+  .ck small { display: block; font-weight: 500; font-size: 10.5px; color: var(--mut); }
+  .ck span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ck input { accent-color: var(--acc); width: 16px; height: 16px; flex: none; }
+  .ck.on { border-color: var(--acc); }
+  .ck.off { opacity: .35; cursor: not-allowed; }
   .prog { margin-top: 14px; display: none; }
   .prog.on { display: block; }
   .prog .trilho { height: 8px; border-radius: 4px; background: var(--line); overflow: hidden; }
@@ -77,6 +90,12 @@
     <select id="ooh"></select>
   </div>
 
+  <div id="lote">
+    <div class="rot">VÁRIOS FORMATOS DE UMA VEZ</div>
+    <div class="lote-at"><button data-marca="ooh">Todos OOH</button><button data-marca="tudo">Todos</button><button data-marca="nada">Limpar</button></div>
+    <div id="loteLista"></div>
+  </div>
+
   <div class="rot" id="rotDisputa">DISPUTA</div>
   <select id="disputa"></select>
   <div id="blocoPos" style="display:none">
@@ -99,6 +118,7 @@
   </div>
 
   <div class="acoes">
+    <button class="prim" id="bLote" style="display:none"></button>
     <button class="prim" id="bVideo">⬇ Baixar vídeo · 10 s (MP4)</button>
     <button id="bTodos" style="display:none">⬇ Baixar todos os eleitos (PNG, um por um)</button>
     <button id="bImg">⬇ Baixar imagem final (PNG)</button>
@@ -114,10 +134,10 @@
   <div class="quadro" id="quadro"><iframe id="prev" title="Pré-visualização"></iframe></div>
 </main>
 
-<script src="dados.js?v=20260930d"></script>
-<script src="pesquisas.js?v=20260930d"></script>
-<script src="comparativos.js?v=20260930d"></script>
-<script src="formatos.js?v=20260930d"></script>
+<script src="dados.js?v=20260930f"></script>
+<script src="pesquisas.js?v=20260930f"></script>
+<script src="comparativos.js?v=20260930f"></script>
+<script src="formatos.js?v=20260930f"></script>
 <script>
 // Estúdio: escolhe tipo/formato/disputa, mostra a prévia e exporta vídeo (10 s) ou o quadro final.
 const TAM = { h: [1920, 1080], v: [1080, 1920], f: [1080, 1350] };
@@ -127,11 +147,28 @@ const ehOOH = () => String(est.formato).startsWith('o:');
 const fOOH = () => OOH[String(est.formato).slice(2)];
 const tam = () => ehOOH() ? [fOOH().w, fOOH().h] : TAM[est.formato];
 const nomeFmt = () => ehOOH() ? 'ooh-' + fOOH().id : NOME_FMT[est.formato];
-const est = { tipo: 'resultado', formato: 'f', disputa: 'br', fonte: 'sim', turno: '', pesquisa: PESQUISAS[0].id, comparativo: COMPARATIVOS[0].id, tarja: 'a:br', pos: 1 };
+// lote: todos os formatos (live, redes, OOH) com chave igual a est.formato
+const FMTS = ['live', 'redes', 'ooh'].flatMap(c => CANAIS[c].formatos.map(f => ({ k: c === 'ooh' ? 'o:' + f.id : f.id, canal: c, nome: f.nome, w: f.w, h: f.h })));
+const podeFmt = k => est.tipo !== 'tarja' && (!k.startsWith('o:') || ['apuracao', 'resultado'].includes(est.tipo));
+const marcados = () => (est.lote || []).filter(k => FMTS.some(f => f.k === k) && podeFmt(k));
+function montarLote() {
+  $('lote').style.display = est.tipo === 'tarja' ? 'none' : '';
+  const sel = new Set(est.lote || []);
+  $('loteLista').innerHTML = ['live', 'redes', 'ooh'].map(c => `<div class="lote-grupo">${CANAIS[c].nome}</div><div class="lote-lista">` +
+    FMTS.filter(f => f.canal === c).map(f => {
+      const pode = podeFmt(f.k), on = pode && sel.has(f.k);
+      return `<label class="ck ${on ? 'on' : ''} ${pode ? '' : 'off'}" title="${f.nome} · ${f.w}×${f.h}"><input type="checkbox" value="${f.k}" ${on ? 'checked' : ''} ${pode ? '' : 'disabled'}>
+        <span>${f.nome}<small>${f.w}×${f.h}</small></span></label>`;
+    }).join('') + '</div>').join('');
+  const n = marcados().length;
+  $('bLote').style.display = n && est.tipo !== 'tarja' ? '' : 'none';
+  $('bLote').textContent = `⬇ Baixar ${n} ${n > 1 ? 'formatos marcados' : 'formato marcado'} · MP4 (ZIP, ≈${Math.max(1, Math.round(n * 22 / 60))} min)`;
+}
+const est = { tipo: 'resultado', formato: 'f', disputa: 'br', fonte: 'sim', turno: '', pesquisa: PESQUISAS[0].id, comparativo: COMPARATIVOS[0].id, tarja: 'a:br', pos: 1, lote: [] };
 try { Object.assign(est, JSON.parse(localStorage.getItem('estudio') || '{}')); } catch (e) {}
 const $ = id => document.getElementById(id);
 
-const VERSAO = '20260930d';   // muda a cada publicação: as telas nunca vêm do cache antigo
+const VERSAO = '20260930f';   // muda a cada publicação: as telas nunca vêm do cache antigo
 function urlDe(extra = {}) {
   const q = new URLSearchParams();
   q.set('v', VERSAO);
@@ -228,7 +265,7 @@ function montarDisputas() {
 
 function atualizar() {
   try { localStorage.setItem('estudio', JSON.stringify(est)); } catch (e) {}
-  if (ehOOH() && !['apuracao', 'resultado'].includes(est.tipo)) est.formato = 'h';   // OOH só tem apuração e vencedores
+  if (ehOOH() && (!fOOH() || !['apuracao', 'resultado'].includes(est.tipo))) est.formato = 'h';   // formato removido ou tipo sem OOH   // OOH só tem apuração e vencedores
   if (!ehOOH() && !TAM[est.formato]) est.formato = 'h';
   for (const k of ['tipo', 'formato', 'fonte', 'turno'])
     $(k).querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.v === est[k]));
@@ -239,6 +276,7 @@ function atualizar() {
   sel.value = ehOOH() ? fOOH().id : '';
   sel.classList.toggle('on', ehOOH());
   montarDisputas();
+  montarLote();
   $('bImg').style.display = ehOOH() ? 'none' : '';   // OOH: só MP4
   $('bTodos').textContent = ehOOH() ? '⬇ Baixar todos os eleitos (MP4, um por um)' : '⬇ Baixar todos os eleitos (PNG, um por um)';
   const u = urlDe();
@@ -269,7 +307,7 @@ function progresso(p, txt) {
   $('prog').classList.toggle('on', p !== null);
   if (p !== null) { $('prog').querySelector('b').style.width = Math.round(p * 100) + '%'; $('prog').querySelector('p').textContent = txt; }
 }
-function ocupado(sim) { ['bVideo', 'bImg', 'bRep', 'bTodos'].forEach(id => { $(id).disabled = sim; }); }
+function ocupado(sim) { ['bVideo', 'bImg', 'bRep', 'bTodos', 'bLote'].forEach(id => { $(id).disabled = sim; }); }
 
 // carrega a página em tamanho real com ?export=1 e espera os dados chegarem
 async function abrirExport() {
@@ -321,6 +359,64 @@ async function exportar(tipo) {
 }
 $('bVideo').addEventListener('click', () => exportar('video'));
 $('bImg').addEventListener('click', () => exportar('imagem'));
+$('loteLista').addEventListener('change', e => {
+  const k = e.target.value, sel = new Set(est.lote || []);
+  e.target.checked ? sel.add(k) : sel.delete(k);
+  est.lote = [...sel]; guardarLote();
+});
+document.querySelector('.lote-at').addEventListener('click', e => {
+  const m = e.target.dataset.marca; if (!m) return;
+  est.lote = m === 'nada' ? [] : FMTS.filter(f => (m === 'tudo' || f.canal === 'ooh') && podeFmt(f.k)).map(f => f.k);
+  guardarLote();
+});
+
+function guardarLote() { try { localStorage.setItem('estudio', JSON.stringify(est)); } catch (e) {} montarLote(); }   // sem recarregar a prévia
+
+// lote: gera o MP4 de cada formato marcado, um depois do outro, e entrega tudo num ZIP só
+let zipLib = null;
+const carregarZip = () => zipLib || (zipLib = new Promise((ok, erro) => {
+  const sc = document.createElement('script'); sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+  sc.onload = ok; sc.onerror = () => { zipLib = null; erro(new Error('não carregou o gerador de ZIP')); }; document.head.appendChild(sc);
+}));
+$('bLote').addEventListener('click', async () => {
+  const lista = marcados();
+  if (!lista.length) return;
+  const volta = est.formato, falhas = [];
+  ocupado(true); mensagem('');
+  let zip, nomeZip, feitos = 0;
+  try {
+    await carregarZip();
+    zip = new JSZip();
+    for (let i = 0; i < lista.length; i++) {
+      est.formato = lista[i];
+      const f = FMTS.find(x => x.k === lista[i]), rot = `${f.nome} ${f.w}×${f.h}`;
+      if (!nomeZip) nomeZip = nomeArquivo('zip').replace(nomeFmt(), `${lista.length}-formatos`);
+      progresso(i / lista.length, `Formato ${i + 1} de ${lista.length} · ${rot}…`);
+      try {
+        const w = await abrirExport();
+        const blob = await w.Exportar.video({ segundos: 10, fps: 30,
+          progresso: q => progresso((i + q) / lista.length, `Formato ${i + 1} de ${lista.length} · ${rot} · ${Math.round(q * 100)}%`) });
+        zip.file(nomeArquivo('mp4'), blob);
+        feitos++;
+      } catch (e) {
+        console.error(e);
+        falhas.push(`${rot}: ${e.message || e}`);
+        if (/ainda não/.test(e.message || '')) break;          // sem dados: os outros formatos também não teriam
+      } finally { $('exp')?.remove(); }
+    }
+    if (feitos) {
+      progresso(1, 'Juntando no ZIP…');
+      baixar(await zip.generateAsync({ type: 'blob', compression: 'STORE' }), nomeZip);
+    }
+    mensagem((feitos ? `ZIP pronto com ${feitos} vídeo${feitos > 1 ? 's' : ''} (MP4, 10 s).` : 'Nenhum vídeo gerado.') +
+      (falhas.length ? ' Não saíram: ' + falhas.join(' · ') : ''), !feitos || falhas.length > 0);
+  } catch (e) {
+    console.error(e);
+    mensagem('Não deu para exportar: ' + (e.message || e), true);
+  } finally {
+    est.formato = volta; progresso(null); ocupado(false); $('exp')?.remove(); atualizar();
+  }
+});
 $('pos').addEventListener('change', e => { est.pos = +e.target.value; atualizar(); });
 
 // deputados: gera o PNG de cada eleito, do 1º ao último (o total vem da própria página)
