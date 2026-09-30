@@ -20,6 +20,9 @@
   h1 { font-size: 13px; letter-spacing: 4px; color: var(--mut); margin: 14px 0 22px; font-weight: 700; }
   .rot { font-size: 12px; font-weight: 800; letter-spacing: 3px; color: var(--mut); margin: 18px 0 8px; }
   .seg { display: grid; gap: 6px; }
+  .canal { margin: 10px 0 5px; font-size: 11px; font-weight: 700; letter-spacing: 2px; color: var(--mut); }
+  .canal small { font-weight: 500; letter-spacing: .5px; }
+  #ooh.on { border-color: var(--acc); box-shadow: 0 0 0 1px var(--acc); }
   .seg.c2 { grid-template-columns: 1fr 1fr; } .seg.c3 { grid-template-columns: 1fr 1fr 1fr; }
   .seg button { font: inherit; color: var(--tx); background: var(--card); border: 1.5px solid var(--line); border-radius: 8px;
     padding: 10px 8px; font-weight: 700; font-size: 14px; cursor: pointer; line-height: 1.2; }
@@ -65,10 +68,13 @@
   </div>
 
   <div class="rot" id="rotFormato">FORMATO</div>
-  <div class="seg c3" id="formato">
-    <button data-v="h">Horizontal<small>1920×1080</small></button>
-    <button data-v="v">Stories<small>1080×1920</small></button>
-    <button data-v="f">Feed<small>1080×1350</small></button>
+  <div id="formato">
+    <div class="canal">LIVE YOUTUBE</div>
+    <div class="seg"><button data-v="h">Horizontal<small>1920×1080</small></button></div>
+    <div class="canal">REDES SOCIAIS</div>
+    <div class="seg c2"><button data-v="v">Stories<small>1080×1920</small></button><button data-v="f">Feed<small>1080×1350</small></button></div>
+    <div class="canal">OOH <small>· apuração e vencedores · MP4</small></div>
+    <select id="ooh"></select>
   </div>
 
   <div class="rot" id="rotDisputa">DISPUTA</div>
@@ -108,21 +114,35 @@
   <div class="quadro" id="quadro"><iframe id="prev" title="Pré-visualização"></iframe></div>
 </main>
 
-<script src="dados.js?v=20260930c"></script>
-<script src="pesquisas.js?v=20260930c"></script>
-<script src="comparativos.js?v=20260930c"></script>
+<script src="dados.js?v=20260930d"></script>
+<script src="pesquisas.js?v=20260930d"></script>
+<script src="comparativos.js?v=20260930d"></script>
+<script src="formatos.js?v=20260930d"></script>
 <script>
 // Estúdio: escolhe tipo/formato/disputa, mostra a prévia e exporta vídeo (10 s) ou o quadro final.
 const TAM = { h: [1920, 1080], v: [1080, 1920], f: [1080, 1350] };
 const NOME_FMT = { h: 'horizontal', v: 'stories', f: 'feed' };
+// OOH: est.formato = 'o:<id>' (formatos.js); só apuração e vencedores, entrega em MP4
+const ehOOH = () => String(est.formato).startsWith('o:');
+const fOOH = () => OOH[String(est.formato).slice(2)];
+const tam = () => ehOOH() ? [fOOH().w, fOOH().h] : TAM[est.formato];
+const nomeFmt = () => ehOOH() ? 'ooh-' + fOOH().id : NOME_FMT[est.formato];
 const est = { tipo: 'resultado', formato: 'f', disputa: 'br', fonte: 'sim', turno: '', pesquisa: PESQUISAS[0].id, comparativo: COMPARATIVOS[0].id, tarja: 'a:br', pos: 1 };
 try { Object.assign(est, JSON.parse(localStorage.getItem('estudio') || '{}')); } catch (e) {}
 const $ = id => document.getElementById(id);
 
-const VERSAO = '20260930c';   // muda a cada publicação: as telas nunca vêm do cache antigo
+const VERSAO = '20260930d';   // muda a cada publicação: as telas nunca vêm do cache antigo
 function urlDe(extra = {}) {
   const q = new URLSearchParams();
   q.set('v', VERSAO);
+  if (ehOOH()) {
+    const qo = new URLSearchParams({ v: VERSAO, arte: est.tipo === 'apuracao' ? 'apuracao' : 'vencedores', fmt: fOOH().id });
+    if (est.fonte === 'sim') qo.set('sim', '1');
+    if (est.turno) qo.set('turno', est.turno);
+    for (const [k, v] of Object.entries(extra)) qo.set(k, v);
+    const dep = est.tipo === 'resultado' && ABAS.find(a => a.id === est.disputa)?.lista;
+    return `ooh.html?${qo}#${est.disputa}${dep ? ':' + est.pos : ''}`;
+  }
   if (est.fonte === 'sim') q.set('sim', '1');
   if (est.turno) q.set('turno', est.turno);
   let pag;
@@ -208,9 +228,19 @@ function montarDisputas() {
 
 function atualizar() {
   try { localStorage.setItem('estudio', JSON.stringify(est)); } catch (e) {}
+  if (ehOOH() && !['apuracao', 'resultado'].includes(est.tipo)) est.formato = 'h';   // OOH só tem apuração e vencedores
+  if (!ehOOH() && !TAM[est.formato]) est.formato = 'h';
   for (const k of ['tipo', 'formato', 'fonte', 'turno'])
     $(k).querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.v === est[k]));
+  const sel = $('ooh');
+  if (!sel.options.length) sel.innerHTML = '<option value="">escolher tela OOH…</option>' +
+    CANAIS.ooh.formatos.map(f => `<option value="${f.id}">${f.nome} · ${f.w}×${f.h}</option>`).join('');
+  sel.disabled = !['apuracao', 'resultado'].includes(est.tipo);
+  sel.value = ehOOH() ? fOOH().id : '';
+  sel.classList.toggle('on', ehOOH());
   montarDisputas();
+  $('bImg').style.display = ehOOH() ? 'none' : '';   // OOH: só MP4
+  $('bTodos').textContent = ehOOH() ? '⬇ Baixar todos os eleitos (MP4, um por um)' : '⬇ Baixar todos os eleitos (PNG, um por um)';
   const u = urlDe();
   $('prev').src = est.tipo === 'tarja' ? urlDe({ fundo: '1' }) : u;   // prévia da tarja com xadrez (o link do vMix fica transparente)
   $('bAbrir').href = u;
@@ -218,17 +248,18 @@ function atualizar() {
 }
 
 function encaixar() {
-  const [W, H] = TAM[est.formato];
+  const [W, H] = tam();
   const area = document.querySelector('main').getBoundingClientRect();
   const s = Math.min((area.width - 56) / W, (area.height - 70) / H);
   $('quadro').style.width = W * s + 'px';
   $('quadro').style.height = H * s + 'px';
-  $('dim').textContent = `${NOME_FMT[est.formato].toUpperCase()} · ${W}×${H}`;
+  $('dim').textContent = `${ehOOH() ? 'OOH · ' + fOOH().nome : NOME_FMT[est.formato].toUpperCase()} · ${W}×${H}`;
 }
 
 for (const k of ['tipo', 'formato', 'fonte', 'turno'])
   $(k).addEventListener('click', e => { const b = e.target.closest('button'); if (b) { est[k] = b.dataset.v; atualizar(); } });
 $('disputa').addEventListener('change', e => { if (est.tipo === 'pesquisa') est.pesquisa = e.target.value; else if (est.tipo === 'tarja') est.tarja = e.target.value; else if (est.tipo === 'comparativo') est.comparativo = e.target.value; else est.disputa = e.target.value; atualizar(); });
+$('ooh').addEventListener('change', e => { est.formato = e.target.value ? 'o:' + e.target.value : 'h'; atualizar(); });
 $('bRep').addEventListener('click', () => { $('prev').src = 'about:blank'; setTimeout(() => { $('prev').src = urlDe(est.tipo === 'tarja' ? { fundo: '1' } : {}); }, 50); });
 addEventListener('resize', encaixar);
 
@@ -243,7 +274,7 @@ function ocupado(sim) { ['bVideo', 'bImg', 'bRep', 'bTodos'].forEach(id => { $(i
 // carrega a página em tamanho real com ?export=1 e espera os dados chegarem
 async function abrirExport() {
   $('exp')?.remove();
-  const [W, H] = TAM[est.formato];
+  const [W, H] = tam();
   const f = document.createElement('iframe');
   f.id = 'exp'; f.style.width = W + 'px'; f.style.height = H + 'px';
   document.body.appendChild(f);
@@ -257,11 +288,11 @@ async function abrirExport() {
 
 function nomeArquivo(ext) {
   if (est.tipo === 'tarja') return `urbnews-tarja-${est.tarja.replace(':', '-')}${est.tarja.startsWith('a:') && est.fonte === 'sim' ? '-simulacao' : ''}.${ext}`;
-  if (est.tipo === 'comparativo') return `urbnews-comparativo-${est.comparativo}-${NOME_FMT[est.formato]}.${ext}`;
-  if (est.tipo === 'pesquisa') return `urbnews-pesquisa-${est.pesquisa}-${NOME_FMT[est.formato]}.${ext}`;
+  if (est.tipo === 'comparativo') return `urbnews-comparativo-${est.comparativo}-${nomeFmt()}.${ext}`;
+  if (est.tipo === 'pesquisa') return `urbnews-pesquisa-${est.pesquisa}-${nomeFmt()}.${ext}`;
   const a = ABAS.find(x => x.id === est.disputa);
   const disp = (a.id === 'br' ? 'presidente' : `${a.titulo.toLowerCase().replace(/\s+/g, '-')}-${a.abr}`) + (est.tipo === 'resultado' && a.lista ? '-' + String(est.pos).padStart(2, '0') : '');
-  return `urbnews-${est.tipo === 'resultado' ? 'vencedores' : 'apuracao'}-${NOME_FMT[est.formato]}-${disp}${est.fonte === 'sim' ? '-simulacao' : ''}.${ext}`;
+  return `urbnews-${est.tipo === 'resultado' ? 'vencedores' : 'apuracao'}-${nomeFmt()}-${disp}${est.fonte === 'sim' ? '-simulacao' : ''}.${ext}`;
 }
 function baixar(blob, nome) {
   const a = document.createElement('a');
@@ -303,7 +334,8 @@ $('bTodos').addEventListener('click', async () => {
       progresso((p - 1) / total, `Eleito ${p}${total > 1 ? ' de ' + total : ''}…`);
       const w = await abrirExport();
       if (p === 1) total = w.__totalEleitos || 1;
-      baixar(await w.Exportar.imagem(9900), nomeArquivo('png'));
+      if (ehOOH()) baixar(await w.Exportar.video({ segundos: 10, fps: 30, progresso: q => progresso((p - 1 + q) / total, `Eleito ${p} de ${total} · vídeo ${Math.round(q * 100)}%`) }), nomeArquivo('mp4'));
+      else baixar(await w.Exportar.imagem(9900), nomeArquivo('png'));
       feitos++;
       $('exp')?.remove();
     }
