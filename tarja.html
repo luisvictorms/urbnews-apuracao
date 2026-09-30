@@ -38,6 +38,19 @@
   .foto img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 12%; display: block; }
   .foto .ini { width: 100%; height: 100%; display: grid; place-items: center; font-weight: 800; font-size: 54px; background: linear-gradient(160deg, #2c6488, #0f3a48); }
   @keyframes foto { from { opacity: 0; transform: translateY(40px); } }
+  /* deputados: os 5 mais votados lado a lado dentro da faixa */
+  .dep { position: absolute; top: 501px; width: 260px; height: 161px; animation: surge .5s both; }
+  .dep + .dep::before { content: ''; position: absolute; left: 0; top: 18px; bottom: 18px; width: 1px; background: rgba(255,255,255,.14); }
+  .dep .ft { position: absolute; left: 16px; top: 20px; width: 88px; height: 121px; background: #fff; overflow: hidden; }
+  .dep .ft img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 12%; display: block; }
+  .dep .ft .ini { width: 100%; height: 100%; display: grid; place-items: center; font-weight: 800; font-size: 34px; background: linear-gradient(160deg, #2c6488, #0f3a48); }
+  .dep .rk { position: absolute; left: 116px; top: 18px; font-weight: 800; font-size: 13px; letter-spacing: .5px; color: #aefd04; white-space: nowrap; }
+  .dep .rk .tag { margin-left: 6px; padding: 1px 6px; border-radius: 3px; background: #aefd04; color: #012128; font-size: 11px; }
+  .dep .nm { position: absolute; left: 116px; right: 8px; top: 36px; font-weight: 700; line-height: 1.05; text-transform: uppercase; }
+  .dep .pa { position: absolute; left: 116px; right: 8px; top: 76px; font-weight: 500; font-size: 12px; color: #cfe0e6; text-transform: uppercase; white-space: nowrap; }
+  .dep .pc { position: absolute; left: 116px; top: 94px; font-weight: 800; font-size: 32px; line-height: 1; font-variant-numeric: tabular-nums; }
+  .dep .pc small { font-size: .6em; }
+  .dep .vt { position: absolute; left: 116px; top: 128px; font-weight: 500; font-size: 12px; color: #e6eef0; white-space: nowrap; }
   .aviso { position: absolute; left: 457px; top: 540px; width: 1302px; text-align: center; font-weight: 600; font-size: 28px; color: #cfe0e6; }
   .sim { position: absolute; left: 1640px; top: 470px; background: #d29922; color: #000; font-weight: 800; font-size: 14px; padding: 3px 8px; border-radius: 3px; }
 </style>
@@ -46,19 +59,19 @@
 <div id="stage"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script src="sync.js?v=20260929d"></script>
-<script src="dados.js?v=20260929d"></script>
-<script src="pesquisas.js?v=20260929d"></script>
-<script src="exportar.js?v=20260929d"></script>
+<script src="sync.js?v=20260930a"></script>
+<script src="dados.js?v=20260930a"></script>
+<script src="pesquisas.js?v=20260930a"></script>
+<script src="exportar.js?v=20260930a"></script>
 <script>
 // Tarja (lower third) para o vMix, fundo transparente.
-//   ?tipo=apuracao#ce  → os 2 mais votados da disputa (TSE, atualiza sozinha; &sala= segue o controle do celular; &sim=1 simulação)
+//   ?tipo=apuracao#ce  → os 2 mais votados da disputa (deputados #df-ce / #de-ce: os 5 mais votados) (TSE, atualiza sozinha; &sala= segue o controle do celular; &sim=1 simulação)
 //   ?tipo=pesquisa&p=<id da pesquisa> → os 2 primeiros da pesquisa + dados legais no letreiro
 //   &texto=... troca o letreiro · &fundo=1 mostra xadrez atrás (só prévia)
 const TIPO = Q.get('tipo') === 'pesquisa' ? 'pesquisa' : 'apuracao';
 if (Q.get('fundo') === '1') document.body.classList.add('xadrez');
 const stage = document.getElementById('stage');
-const DISPUTAS = ABAS.filter(a => !a.lista);
+const DISPUTAS = ABAS;   // deputados (aba.lista) viram a tarja dos 5 mais votados
 let atual = Math.max(0, DISPUTAS.findIndex(a => a.id === (location.hash.slice(1) || Q.get('aba'))));
 let chaveAtual = '', t0 = performance.now();
 
@@ -74,9 +87,9 @@ function daApuracao() {
   if (!r || !r.cands.length) return { aba, vazio: 'Aguardando os primeiros resultados do TSE…', letreiro: `APURAÇÃO DE VOTOS EM TEMPO REAL · ${rot}` };
   const tag = c => c.st.startsWith('ELEITO') ? 'ELEITO' : c.st === '2º TURNO' ? '2º TURNO' : '';
   return {
-    aba, casas: 2,
-    cands: r.cands.slice(0, 2).map(c => ({ nome: c.nome, pct: c.pct, sub: c.votos ? `${c.votos.toLocaleString('pt-BR')} VOTOS` : '', foto: c.foto, tag: tag(c) })),
-    letreiro: `APURAÇÃO DE VOTOS EM TEMPO REAL · ${rot}${r.turno === 2 ? ' · 2º TURNO' : ''} · ${fnum(r.secoes, 2)}% DAS SEÇÕES APURADAS · FONTE: TSE`,
+    aba, casas: 2, lista: !!aba.lista,
+    cands: r.cands.slice(0, aba.lista ? 5 : 2).map(c => ({ nome: c.nome, partido: c.partido, pct: c.pct, sub: c.votos ? `${c.votos.toLocaleString('pt-BR')} VOTOS` : '', foto: c.foto, tag: tag(c) })),
+    letreiro: `APURAÇÃO DE VOTOS EM TEMPO REAL · ${rot}${aba.lista ? ' · MAIS VOTADOS' : ''}${r.turno === 2 ? ' · 2º TURNO' : ''} · ${fnum(r.secoes, 2)}% DAS SEÇÕES APURADAS · FONTE: TSE`,
   };
 }
 function daPesquisa() {
@@ -99,7 +112,19 @@ function montar(d) {
   let h = `<div class="box"><img src="tarjas/logo-box.png" alt="urb.NEWS Eleições 2026"></div>
     <div class="barra"></div>
     <div class="letreiro"><span id="letreiro">${esc(Q.get('texto') || d.letreiro)}</span></div>`;
+  const foto = c => c.foto ? `<img src="${esc(c.foto)}" alt="" onerror="this.outerHTML='<div class=ini>${esc(iniciais(c.nome))}</div>'">` : `<div class="ini">${esc(iniciais(c.nome))}</div>`;
   if (d.vazio) h += `<div class="aviso">${esc(d.vazio)}</div>`;
+  else if (d.lista) d.cands.forEach((c, i) => {
+    const t = T(i), fs = c.nome.length > 22 ? 13 : c.nome.length > 16 ? 14.5 : 16;
+    h += `<div class="dep" style="left:${457 + i * 260.4}px;animation-delay:${t.foto}ms">
+      <div class="ft">${foto(c)}</div>
+      <div class="rk">${i + 1}º${c.tag ? `<span class="tag">${c.tag}</span>` : ''}</div>
+      <div class="nm" style="font-size:${fs}px">${esc(c.nome)}</div>
+      <div class="pa">${esc(c.partido || '')}</div>
+      <div class="pc conta" data-i="${i}" data-alvo="${c.pct}">${fnum(c.pct, d.casas)}<small>%</small></div>
+      <div class="vt" data-sub="${i}">${esc(c.sub)}</div>
+    </div>`;
+  });
   else d.cands.forEach((c, i) => {
     const t = T(i);
     h += `<div class="foto" style="left:${XF[i]}px;animation-delay:${t.foto}ms">${c.foto
