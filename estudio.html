@@ -29,6 +29,11 @@
   .seg button small { display: block; font-weight: 500; font-size: 11px; color: var(--mut); margin-top: 2px; }
   .seg button.on { background: var(--acc); border-color: var(--acc); color: var(--escuro); }
   .seg button.on small { color: var(--escuro); }
+  #dif { width: 100%; font: inherit; font-weight: 700; font-size: 15px; color: var(--tx); background: var(--card); text-transform: uppercase;
+    border: 1.5px solid var(--line); border-radius: 8px; padding: 11px 10px; }
+  #dif::placeholder { color: var(--mut); font-weight: 600; }
+  .dica { font-size: 11.5px; color: var(--mut); margin-top: 6px; word-break: break-all; line-height: 1.4; }
+  .dica b { color: var(--tx); font-weight: 700; }
   select { width: 100%; font: inherit; font-weight: 700; font-size: 15px; color: var(--tx); background: var(--card);
     border: 1.5px solid var(--line); border-radius: 8px; padding: 11px 10px; }
   select option, select optgroup { background: #07252d; color: #fff; }
@@ -117,6 +122,12 @@
   </div>
   </div>
 
+  <div id="blocoNome" style="display:none">
+    <div class="rot">DIFERENCIADOR DO ARQUIVO (OOH)</div>
+    <input id="dif" maxlength="40" autocomplete="off" spellcheck="false">
+    <div class="dica" id="nomePrev"></div>
+  </div>
+
   <div class="acoes">
     <button class="prim" id="bLote" style="display:none"></button>
     <button class="prim" id="bVideo">⬇ Baixar vídeo · 10 s (MP4)</button>
@@ -134,10 +145,10 @@
   <div class="quadro" id="quadro"><iframe id="prev" title="Pré-visualização"></iframe></div>
 </main>
 
-<script src="dados.js?v=20260930n"></script>
-<script src="pesquisas.js?v=20260930n"></script>
-<script src="comparativos.js?v=20260930n"></script>
-<script src="formatos.js?v=20260930n"></script>
+<script src="dados.js?v=20260930o"></script>
+<script src="pesquisas.js?v=20260930o"></script>
+<script src="comparativos.js?v=20260930o"></script>
+<script src="formatos.js?v=20260930o"></script>
 <script>
 // Estúdio: escolhe tipo/formato/disputa, mostra a prévia e exporta vídeo (10 s) ou o quadro final.
 const TAM = { h: [1920, 1080], v: [1080, 1920], f: [1080, 1350] };
@@ -164,11 +175,11 @@ function montarLote() {
   $('bLote').style.display = n && ['apuracao', 'resultado'].includes(est.tipo) ? '' : 'none';
   $('bLote').textContent = `⬇ Baixar ${n} ${n > 1 ? 'formatos OOH marcados' : 'formato OOH marcado'} · MP4 (ZIP, ≈${Math.max(1, Math.round(n * 16 / 60))} min)`;
 }
-const est = { tipo: 'resultado', formato: 'f', disputa: 'br', fonte: 'sim', turno: '', pesquisa: PESQUISAS[0].id, comparativo: COMPARATIVOS[0].id, tarja: 'a:br', pos: 1, lote: [] };
+const est = { tipo: 'resultado', formato: 'f', disputa: 'br', fonte: 'sim', turno: '', pesquisa: PESQUISAS[0].id, comparativo: COMPARATIVOS[0].id, tarja: 'a:br', pos: 1, lote: [], dif: '' };
 try { Object.assign(est, JSON.parse(localStorage.getItem('estudio') || '{}')); } catch (e) {}
 const $ = id => document.getElementById(id);
 
-const VERSAO = '20260930n';   // muda a cada publicação: as telas nunca vêm do cache antigo
+const VERSAO = '20260930o';   // muda a cada publicação: as telas nunca vêm do cache antigo
 function urlDe(extra = {}) {
   const q = new URLSearchParams();
   q.set('v', VERSAO);
@@ -277,6 +288,7 @@ function atualizar() {
   sel.classList.toggle('on', ehOOH());
   montarDisputas();
   montarLote();
+  montarNome();
   $('bImg').style.display = ehOOH() ? 'none' : '';   // OOH: só MP4
   $('bTodos').textContent = ehOOH() ? '⬇ Baixar todos os eleitos (MP4, um por um)' : '⬇ Baixar todos os eleitos (PNG, um por um)';
   const u = urlDe();
@@ -295,8 +307,9 @@ function encaixar() {
 }
 
 for (const k of ['tipo', 'formato', 'fonte', 'turno'])
-  $(k).addEventListener('click', e => { const b = e.target.closest('button'); if (b) { est[k] = b.dataset.v; atualizar(); } });
-$('disputa').addEventListener('change', e => { if (est.tipo === 'pesquisa') est.pesquisa = e.target.value; else if (est.tipo === 'tarja') est.tarja = e.target.value; else if (est.tipo === 'comparativo') est.comparativo = e.target.value; else est.disputa = e.target.value; atualizar(); });
+  $(k).addEventListener('click', e => { const b = e.target.closest('button'); if (b) { if (k === 'tipo' && est.tipo !== b.dataset.v) est.dif = ''; est[k] = b.dataset.v; atualizar(); } });
+$('dif').addEventListener('input', e => { est.dif = limpo(e.target.value); e.target.value = est.dif; try { localStorage.setItem('estudio', JSON.stringify(est)); } catch (x) {} montarNome(); });
+$('disputa').addEventListener('change', e => { if (est.tipo === 'pesquisa') est.pesquisa = e.target.value; else if (est.tipo === 'tarja') est.tarja = e.target.value; else if (est.tipo === 'comparativo') est.comparativo = e.target.value; else { est.disputa = e.target.value; est.dif = ''; } atualizar(); });
 $('ooh').addEventListener('change', e => { est.formato = e.target.value ? 'o:' + e.target.value : 'h'; atualizar(); });
 $('bRep').addEventListener('click', () => { $('prev').src = 'about:blank'; setTimeout(() => { $('prev').src = urlDe(est.tipo === 'tarja' ? { fundo: '1' } : {}); }, 50); });
 addEventListener('resize', encaixar);
@@ -324,7 +337,33 @@ async function abrirExport() {
   return w;
 }
 
+// OOH: DATA_FORMATO_EMPRESA_DIFERENCIADOR (ex.: 30092026_WIDE_URBNEWS_BOLSOLULAVENCEU)
+const limpo = t => String(t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+const hoje = () => { const d = new Date(); return String(d.getDate()).padStart(2, '0') + String(d.getMonth() + 1).padStart(2, '0') + d.getFullYear(); };
+function difAuto() {
+  const a = ABAS.find(x => x.id === est.disputa);
+  const cargo = a.id === 'br' ? 'PRES' : a.lista ? (a.cargo === 6 ? 'DEPFED' : 'DEPEST') : a.cargo === 5 ? 'SEN' : 'GOV';
+  const uf = a.id === 'br' ? 'BR' : a.abr.toUpperCase();
+  const base = est.tipo === 'resultado'
+    ? (a.lista ? `${cargo}${uf}${String(est.pos).padStart(2, '0')}ELEITO` : `VENCEDOR${cargo}${uf}`)
+    : `APURACAO${cargo}${uf}`;
+  return base + (est.fonte === 'sim' ? 'SIMULACAO' : '');
+}
+// deputados: vários arquivos com o mesmo diferenciador digitado ganham a posição no fim
+const dif = () => limpo(est.dif) ? limpo(est.dif) + (est.tipo === 'resultado' && ABAS.find(x => x.id === est.disputa).lista && est.__varios ? String(est.pos).padStart(2, '0') : '') : difAuto();
+const nomeOOH = (ext, fmt = fOOH()) => `${hoje()}_${fmt.arq}_URBNEWS_${dif()}.${ext}`;
+function montarNome() {
+  const mostra = ['apuracao', 'resultado'].includes(est.tipo) && (ehOOH() || marcados().length > 0);
+  $('blocoNome').style.display = mostra ? '' : 'none';
+  if (!mostra) return;
+  $('dif').placeholder = difAuto() + ' (automático)';
+  if ($('dif').value !== est.dif) $('dif').value = est.dif || '';
+  const ex = ehOOH() ? fOOH() : OOH[marcados()[0].slice(2)];
+  $('nomePrev').innerHTML = `Arquivo: <b>${nomeOOH('mp4', ex)}</b>` + (marcados().length > 1 ? `<br>ZIP: <b>${hoje()}_OOH_URBNEWS_${dif()}.zip</b>` : '');
+}
+
 function nomeArquivo(ext) {
+  if (ehOOH() && ['apuracao', 'resultado'].includes(est.tipo)) return nomeOOH(ext);
   if (est.tipo === 'tarja') return `urbnews-tarja-${est.tarja.replace(':', '-')}${est.tarja.startsWith('a:') && est.fonte === 'sim' ? '-simulacao' : ''}.${ext}`;
   if (est.tipo === 'comparativo') return `urbnews-comparativo-${est.comparativo}-${nomeFmt()}.${ext}`;
   if (est.tipo === 'pesquisa') return `urbnews-pesquisa-${est.pesquisa}-${nomeFmt()}.${ext}`;
@@ -370,7 +409,7 @@ document.querySelector('.lote-at').addEventListener('click', e => {
   guardarLote();
 });
 
-function guardarLote() { try { localStorage.setItem('estudio', JSON.stringify(est)); } catch (e) {} montarLote(); }   // sem recarregar a prévia
+function guardarLote() { try { localStorage.setItem('estudio', JSON.stringify(est)); } catch (e) {} montarLote(); montarNome(); }   // sem recarregar a prévia
 
 // lote: gera o MP4 de cada formato marcado, um depois do outro, e entrega tudo num ZIP só
 let zipLib = null;
@@ -390,7 +429,7 @@ $('bLote').addEventListener('click', async () => {
     for (let i = 0; i < lista.length; i++) {
       est.formato = lista[i];
       const f = FMTS.find(x => x.k === lista[i]), rot = `${f.nome} ${f.w}×${f.h}`;
-      if (!nomeZip) nomeZip = nomeArquivo('zip').replace(nomeFmt(), `${lista.length}-formatos`);
+      if (!nomeZip) nomeZip = `${hoje()}_OOH_URBNEWS_${dif()}.zip`;
       progresso(i / lista.length, `Formato ${i + 1} de ${lista.length} · ${rot}…`);
       try {
         const w = await abrirExport();
@@ -417,11 +456,12 @@ $('bLote').addEventListener('click', async () => {
     est.formato = volta; progresso(null); ocupado(false); $('exp')?.remove(); atualizar();
   }
 });
-$('pos').addEventListener('change', e => { est.pos = +e.target.value; atualizar(); });
+$('pos').addEventListener('change', e => { est.pos = +e.target.value; est.dif = ''; atualizar(); });
 
 // deputados: gera o PNG de cada eleito, do 1º ao último (o total vem da própria página)
 $('bTodos').addEventListener('click', async () => {
   const volta = est.pos;
+  est.__varios = true;                       // diferenciador digitado ganha a posição de cada eleito
   ocupado(true); mensagem('');
   let feitos = 0, total = 1;
   try {
@@ -440,7 +480,7 @@ $('bTodos').addEventListener('click', async () => {
     console.error(e);
     mensagem(`Parou no eleito ${feitos + 1}: ` + (e.message || e), true);
   } finally {
-    est.pos = volta; progresso(null); ocupado(false); $('exp')?.remove(); atualizar();
+    delete est.__varios; est.pos = volta; progresso(null); ocupado(false); $('exp')?.remove(); atualizar();
   }
 });
 
