@@ -18,7 +18,8 @@
   #stage { position: absolute; left: 50%; top: 50%; transform-origin: 0 0; overflow: hidden;
     background: var(--bg2) url(fundo.jpg) center / cover no-repeat; --acc: #aefd04; }
   #stage.apu { --acc: #00a2ff; }
-  .u { position: absolute; inset: 0; display: flex; }
+  /* margem de segurança embaixo (padrão 50 px): só fundo, nenhuma informação — o conteúdo usa a altura que sobra */
+  .u { position: absolute; inset: 0 0 var(--margem, 50px) 0; display: flex; }
 
   /* blocos comuns */
   .esq { display: flex; flex-direction: column; min-width: 0; animation: entra .7s cubic-bezier(.2,.8,.2,1) both; }
@@ -188,21 +189,23 @@
 <div id="stage"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script src="sync.js?v=20260930j"></script>
-<script src="dados.js?v=20260930j"></script>
-<script src="formatos.js?v=20260930j"></script>
-<script src="exportar.js?v=20260930j"></script>
+<script src="sync.js?v=20260930k"></script>
+<script src="dados.js?v=20260930k"></script>
+<script src="formatos.js?v=20260930k"></script>
+<script src="exportar.js?v=20260930k"></script>
 <script>
 // OOH: ?arte=vencedores|apuracao &fmt=<id em formatos.js> #aba (deputados nos vencedores: #df-ce:3)
 const ARTE = Q.get('arte') === 'apuracao' ? 'apuracao' : 'vencedores';
 const F = OOH[Q.get('fmt')] || OOH.widefhd;
-const W = F.w, H = F.h, R = W / H;
+const MARGEM = Q.has('margem') ? Math.max(0, +Q.get('margem') || 0) : 50;   // &margem=0 tira a margem
+const W = F.w, H = F.h, HU = H - MARGEM, R = W / HU;             // proporção da área útil
 const FAM = R >= 6 ? 'led' : R >= 2.2 ? 'faixa' : R >= 1.15 ? 'land' : 'port';
-const U = FAM === 'port' ? W / 100 : H / 100;
+const U = FAM === 'port' ? W / 100 : HU / 100;
 const stage = document.getElementById('stage');
 stage.className = `${FAM} ${ARTE === 'apuracao' ? 'apu' : 'venc'}${FAM === 'faixa' && R < 3.3 ? ' estreita' : ''}${FAM === 'port' && R > .7 ? ' baixo' : ''}`;
 Object.assign(stage.style, { width: W + 'px', height: H + 'px' });
 stage.style.setProperty('--u', U + 'px');
+stage.style.setProperty('--margem', MARGEM + 'px');
 
 const lerId = id => { const [a, p] = String(id || '').split(':'); return { aba: ABAS.find(x => x.id === a) || ABAS[0], pos: Math.max(1, +p || 1) }; };
 let { aba, pos } = lerId(location.hash.slice(1) || Q.get('aba'));
