@@ -57,15 +57,15 @@
 <footer id="rodape">Toque numa disputa para colocá-la na tela</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script src="sync.js?v=20260930b"></script>
-<script src="dados.js?v=20260930b"></script>
+<script src="sync.js?v=20260930c"></script>
+<script src="dados.js?v=20260930c"></script>
 <script>
-// ?tipo=resultado: controla a página de resultado (sem deputados)
+// ?tipo=resultado: controla a página de resultado (deputados: um eleito por vez, ◀ ▶ trocam o eleito)
 const RESULTADO = new URLSearchParams(location.search).get('tipo') === 'resultado';
-const LISTA = ABAS.filter(a => !(RESULTADO && a.lista));
+const LISTA = ABAS;
 const rotulo = a => a.id === 'br' ? 'PRESIDENTE · BRASIL' : `${a.titulo} · ${a.local}`;
 const app = document.getElementById('app');
-let atual = null;
+let atual = null, pos = 1;
 
 if (RESULTADO) {
   document.title = 'Controle · Resultado Urbnews';
@@ -84,11 +84,12 @@ if (!window.Sync) {
     }).join('') +
     `<div class="setas"><button data-passo="-1">◀</button><button data-passo="1">▶</button></div>`;
 
-  const marcar = id => {
-    atual = id;
+  const marcar = idc => {
+    const [id, p] = String(idc).split(':');
+    atual = id; pos = +p || 1;
     document.querySelectorAll('[data-id]').forEach(b => b.classList.toggle('on', b.dataset.id === id));
     const a = ABAS.find(x => x.id === id);
-    document.getElementById('noar').textContent = a ? rotulo(a) : '—';
+    document.getElementById('noar').textContent = a ? rotulo(a) + (RESULTADO && a.lista ? ` · ${pos}º ELEITO` : '') : '—';
   };
   const ir = id => {
     Sync.enviar(id);
@@ -99,6 +100,8 @@ if (!window.Sync) {
   app.addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b) return;
     if (b.dataset.id) return ir(b.dataset.id);
+    // vencedores de deputado: as setas passam de eleito em eleito (a tela volta ao 1º depois do último)
+    if (RESULTADO && ABAS.find(a => a.id === atual)?.lista) return ir(`${atual}:${Math.max(1, pos + +b.dataset.passo)}`);
     const i = LISTA.findIndex(a => a.id === atual);
     ir(LISTA[(Math.max(i, 0) + +b.dataset.passo + LISTA.length) % LISTA.length].id);
   });
