@@ -79,6 +79,13 @@
     <button data-v="tarja">Tarjas vMix<small>fundo transparente</small></button>
   </div>
 
+  <div class="rot" id="rotDisputa">DISPUTA</div>
+  <select id="disputa"></select>
+  <div id="blocoPos" style="display:none">
+    <div class="rot">ELEITO (DO MAIS VOTADO PARA O MENOS)</div>
+    <select id="pos"></select>
+  </div>
+
   <div class="rot" id="rotFormato">FORMATO</div>
   <div id="formato">
     <div class="canal">LIVE YOUTUBE</div>
@@ -95,12 +102,6 @@
     <div id="loteLista"></div>
   </div>
 
-  <div class="rot" id="rotDisputa">DISPUTA</div>
-  <select id="disputa"></select>
-  <div id="blocoPos" style="display:none">
-    <div class="rot">ELEITO (DO MAIS VOTADO PARA O MENOS)</div>
-    <select id="pos"></select>
-  </div>
 
   <div id="blocoDados">
   <div class="rot">DADOS</div>
@@ -133,10 +134,10 @@
   <div class="quadro" id="quadro"><iframe id="prev" title="Pré-visualização"></iframe></div>
 </main>
 
-<script src="dados.js?v=20260930h"></script>
-<script src="pesquisas.js?v=20260930h"></script>
-<script src="comparativos.js?v=20260930h"></script>
-<script src="formatos.js?v=20260930h"></script>
+<script src="dados.js?v=20260930i"></script>
+<script src="pesquisas.js?v=20260930i"></script>
+<script src="comparativos.js?v=20260930i"></script>
+<script src="formatos.js?v=20260930i"></script>
 <script>
 // Estúdio: escolhe tipo/formato/disputa, mostra a prévia e exporta vídeo (10 s) ou o quadro final.
 const TAM = { h: [1920, 1080], v: [1080, 1920], f: [1080, 1350] };
@@ -167,7 +168,7 @@ const est = { tipo: 'resultado', formato: 'f', disputa: 'br', fonte: 'sim', turn
 try { Object.assign(est, JSON.parse(localStorage.getItem('estudio') || '{}')); } catch (e) {}
 const $ = id => document.getElementById(id);
 
-const VERSAO = '20260930h';   // muda a cada publicação: as telas nunca vêm do cache antigo
+const VERSAO = '20260930i';   // muda a cada publicação: as telas nunca vêm do cache antigo
 function urlDe(extra = {}) {
   const q = new URLSearchParams();
   q.set('v', VERSAO);
