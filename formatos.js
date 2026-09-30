@@ -13,4 +13,7 @@ window.CANAIS = {
     { id: 'outdoor', nome: 'OUTDOOR / MUB', w: 2048, h: 720 },
   ] },
 };
+// abertura de cada tela OOH (vídeos da produção, já no tamanho exato, 30 fps, sem áudio) — entra antes dos 10 s da arte.
+// WIDE e VERT usam a WIDEFULLHD e a MUP reduzidas (mesma proporção).
+CANAIS.ooh.formatos.forEach(f => { f.intro = `ooh-intro/${f.id}.mp4`; });
 window.OOH = Object.fromEntries(CANAIS.ooh.formatos.map(f => [f.id, f]));

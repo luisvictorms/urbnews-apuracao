@@ -79,7 +79,50 @@ window.Exportar = (function () {
     return new Promise(ok => cv.toBlob(ok, 'image/png'));
   }
 
-  async function video({ segundos = 10, fps = 30, progresso = () => {} } = {}) {
+  // abertura (OOH): lê o MP4 (mp4box.js) e decodifica cada quadro com WebCodecs — exato e não depende do vídeo estar visível.
+  // Os arquivos de ooh-intro/ já estão no tamanho do formato e a 30 fps; cada quadro decodificado vai direto para o encoder.
+  async function gravarIntro(url, enc, fps, progresso) {
+    if (!window.MP4Box) await script('https://cdn.jsdelivr.net/npm/mp4box@0.5.2/dist/mp4box.all.min.js');
+    const r = await fetch(url);
+    if (!r.ok) throw new Error('não carregou a abertura (' + url + ')');
+    const buf = await r.arrayBuffer(); buf.fileStart = 0;
+    const mp4 = MP4Box.createFile(), amostras = [];
+    let trilha;
+    await new Promise((ok, erro) => {
+      mp4.onError = e => erro(new Error('abertura inválida: ' + e));
+      mp4.onReady = info => {
+        trilha = info.videoTracks[0];
+        if (!trilha) return erro(new Error('abertura sem vídeo'));
+        mp4.setExtractionOptions(trilha.id, null, { nbSamples: Infinity }); mp4.start();
+      };
+      mp4.onSamples = (id, u, lote) => { amostras.push(...lote); if (amostras.length >= trilha.nb_samples) ok(); };
+      mp4.appendBuffer(buf); mp4.flush();
+    });
+    const entrada = mp4.getTrackById(trilha.id).mdia.minf.stbl.stsd.entries[0];
+    const caixa = entrada.avcC || entrada.hvcC;
+    const ds = new DataStream(undefined, 0, DataStream.BIG_ENDIAN); caixa.write(ds);
+    const description = new Uint8Array(ds.buffer, 8);            // sem o cabeçalho da caixa
+    let n = 0, erroDec = null;
+    const total = amostras.length;
+    const dec = new VideoDecoder({
+      output: f => {                                             // sai em ordem de exibição
+        const vf = new VideoFrame(f, { timestamp: Math.round(n * 1e6 / fps), duration: Math.round(1e6 / fps) });
+        enc.encode(vf, { keyFrame: n % (fps * 2) === 0 });
+        vf.close(); f.close(); n++;
+        progresso(n / total);
+      },
+      error: e => { erroDec = e; },
+    });
+    dec.configure({ codec: trilha.codec, codedWidth: trilha.video.width, codedHeight: trilha.video.height, description });
+    for (const a of amostras) dec.decode(new EncodedVideoChunk({ type: a.is_sync ? 'key' : 'delta',
+      timestamp: Math.round(1e6 * a.cts / a.timescale), duration: Math.round(1e6 * a.duration / a.timescale), data: a.data }));
+    await dec.flush();
+    dec.close();
+    if (erroDec) throw erroDec;
+    return n;                                                    // quantos quadros entraram
+  }
+
+  async function video({ segundos = 10, fps = 30, intro = null, progresso = () => {} } = {}) {
     if (!('VideoEncoder' in window)) throw new Error('Este navegador não gera vídeo. Use o Chrome ou o Edge atualizados.');
     await preparar();
     const st = stage(), W = st.offsetWidth, H = st.offsetHeight;
@@ -90,6 +133,10 @@ window.Exportar = (function () {
     const enc = new VideoEncoder({ output: (c, m) => muxer.addVideoChunk(c, m), error: e => { erro = e; } });
     enc.configure(cfg);
     const total = Math.round(segundos * fps);
+    // abertura antes da arte (mesmo tamanho, sem áudio); a arte continua com os seus 10 s
+    let base = 0;
+    const totalIntro = intro ? 100 : 0;                          // só para a barra de progresso (~3,3 s)
+    if (intro) base = await gravarIntro(intro, enc, fps, q => progresso(q * totalIntro / (totalIntro + total)));
     // só fotografa quando a imagem muda: movimento = todo quadro; loops lentos = 10/s; parado = reaproveita
     let cv = null, ultimoMs = -1e9;
     for (let i = 0; i < total; i++) {
@@ -97,10 +144,10 @@ window.Exportar = (function () {
       const ms = i * 1000 / fps;
       const estado = posicionar(ms);
       if (!cv || estado === 'sim' || (estado === 'lento' && ms - ultimoMs >= 99)) { cv = await quadro(ms); ultimoMs = ms; }
-      const vf = new VideoFrame(cv, { timestamp: Math.round(i * 1e6 / fps), duration: Math.round(1e6 / fps) });
+      const vf = new VideoFrame(cv, { timestamp: Math.round((base + i) * 1e6 / fps), duration: Math.round(1e6 / fps) });
       enc.encode(vf, { keyFrame: i % (fps * 2) === 0 });
       vf.close();
-      progresso((i + 1) / total);
+      progresso((totalIntro + i + 1) / (totalIntro + total));
     }
     await enc.flush();
     muxer.finalize();
