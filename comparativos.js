@@ -18,7 +18,7 @@ window.COMPARATIVOS = [
     ] },
 
   { id: 'ce-gov', cargo: 'GOVERNADOR', local: 'CEARÁ', turno: '1º TURNO',
-    cands: [_C('CIRO GOMES', 'PSDB', 'ciro'), _C('ELMANO DE FREITAS', 'PT', 'elmano'), _C('VERA LÚCIA', 'NOVO', 'vera-lucia'),
+    cands: [_C('CIRO GOMES', 'PSDB', 'ciro'), _C('ELMANO DE FREITAS', 'PT', 'elmano'), _C('VERA LÚCIA', 'NOVO', 'vera'),
       _C('DELEGADO HUGGO', 'MISSÃO', 'huggo'), _C('DANILO SOARES', 'DEMOCRATA', 'danilo'), _C('SERLEY LEAL', 'UP', 'serley'),
       _O('INDECISOS'), _O('BRANCOS E NULOS')],
     pesquisas: [
