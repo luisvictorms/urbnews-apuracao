@@ -83,25 +83,59 @@ function urlFoto(aba, turno, sq) {
 }
 
 /* ======================= TSE ======================= */
+// códigos das eleições de 2026 (federal/estadual, 1º e 2º turno) a partir do ele-c.json do TSE
+function lerCodigos(cfg, cod = { 1: {}, 2: {} }) {
+  // o ciclo já veio no topo (até 2024) e agora vem em cada pleito ("c": "ele2026") — aceita os dois
+  if (cfg.c && cfg.c !== 'ele2026') return cod;
+  for (const pl of cfg.pl || []) {
+    if ((pl.c && pl.c !== 'ele2026') || !DATAS.includes(pl.dt)) continue;
+    for (const e of pl.e || []) {
+      const cargos = new Set((e.abr || []).flatMap(a => (a.cp || []).map(c => c.cd)));
+      for (const [cg, tipo] of [['1', 'federal'], ['3', 'estadual']]) {
+        if (!cargos.has(cg)) continue;
+        cod[e.t] = cod[e.t] || {};
+        cod[e.t][tipo] = cod[e.t][tipo] || e.cd;
+        if (e.cdt2) { cod[2] = cod[2] || {}; cod[2][tipo] = cod[2][tipo] || e.cdt2; }
+      }
+    }
+  }
+  return cod;
+}
 async function descobrir() {
   if (SIM || (codigos[TURNO].federal && codigos[TURNO].estadual)) return;
   try {
     const cfg = await fetch(`${TSE}/oficial/comum/config/ele-c.json`, { cache: 'no-cache' }).then(r => r.json());
-    // o ciclo já veio no topo (até 2024) e agora vem em cada pleito ("c": "ele2026") — aceita os dois
-    if (cfg.c && cfg.c !== CICLO) return;
-    for (const pl of cfg.pl || []) {
-      if ((pl.c && pl.c !== CICLO) || !DATAS.includes(pl.dt)) continue;
-      for (const e of pl.e || []) {
-        const cargos = new Set((e.abr || []).flatMap(a => (a.cp || []).map(c => c.cd)));
-        for (const [cg, tipo] of [['1', 'federal'], ['3', 'estadual']]) {
-          if (!cargos.has(cg)) continue;
-          codigos[e.t] = codigos[e.t] || {};
-          codigos[e.t][tipo] = codigos[e.t][tipo] || e.cd;
-          if (e.cdt2) { codigos[2] = codigos[2] || {}; codigos[2][tipo] = codigos[2][tipo] || e.cdt2; }
-        }
-      }
-    }
+    lerCodigos(cfg, codigos);
   } catch (e) { console.warn('config TSE', e); }
+}
+
+// o TSE já começou a publicar a apuração de 2026? (basta existir o arquivo de resultado, mesmo zerado)
+// testa Presidente (Brasil) e Governador do CE no turno atual
+async function tseAoVivo() {
+  try {
+    const cfg = await fetch(`${TSE}/oficial/comum/config/ele-c.json`, { cache: 'no-store' }).then(r => r.json());
+    const c = lerCodigos(cfg)[TURNO] || {};
+    const alvos = [[c.federal, 'br', 1], [c.estadual, 'ce', 3]].filter(x => x[0]);
+    for (const [e, uf, cargo] of alvos) {
+      const u = `${TSE}/oficial/ele2026/${e}/dados-simplificados/${uf}/${uf}-c${String(cargo).padStart(4, '0')}-e${String(e).padStart(6, '0')}-r.json`;
+      const r = await fetch(u, { cache: 'no-store' });
+      if (r.ok && ((await r.json()).cand || []).length) return true;
+    }
+  } catch (e) { console.warn('TSE ao vivo?', e); }
+  return false;
+}
+
+// telas em simulação (?sim=1) saem sozinhas dela quando o TSE começa a publicar: recarregam sem o sim, mesmo link e sala.
+// &auto=0 mantém a simulação (ensaio depois que a apuração já começou). Não vale no estúdio exportando (?export=1).
+if (SIM && !EXPORT && Q.get('auto') !== '0') {
+  const vigiarTSE = async () => {
+    if (!(await tseAoVivo())) return;
+    const u = new URL(location.href);
+    u.searchParams.delete('sim');
+    location.replace(u.toString());
+  };
+  setTimeout(vigiarTSE, 8000);
+  setInterval(vigiarTSE, 60000);
 }
 
 async function buscar(aba, turno) {
