@@ -87,9 +87,10 @@ async function descobrir() {
   if (SIM || (codigos[TURNO].federal && codigos[TURNO].estadual)) return;
   try {
     const cfg = await fetch(`${TSE}/oficial/comum/config/ele-c.json`, { cache: 'no-cache' }).then(r => r.json());
-    if (cfg.c !== CICLO) return;
+    // o ciclo já veio no topo (até 2024) e agora vem em cada pleito ("c": "ele2026") — aceita os dois
+    if (cfg.c && cfg.c !== CICLO) return;
     for (const pl of cfg.pl || []) {
-      if (!DATAS.includes(pl.dt)) continue;
+      if ((pl.c && pl.c !== CICLO) || !DATAS.includes(pl.dt)) continue;
       for (const e of pl.e || []) {
         const cargos = new Set((e.abr || []).flatMap(a => (a.cp || []).map(c => c.cd)));
         for (const [cg, tipo] of [['1', 'federal'], ['3', 'estadual']]) {

@@ -1,9 +1,8 @@
 # Vigia o site de resultados do TSE (fora do ar desde 29/09/2026: "Nova versão em breve").
 # De hora em hora testa o arquivo de configuração; quando voltar, abre uma issue (o GitHub avisa por e-mail).
 name: Vigia TSE
+# 30/09/2026: TSE voltou com a configuração de 2026 (6257/6259) — horário automático desligado; dá para rodar à mão.
 on:
-  schedule:
-    - cron: '17 * * * *'
   workflow_dispatch:
 permissions:
   issues: write
