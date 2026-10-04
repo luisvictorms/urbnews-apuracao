@@ -297,6 +297,9 @@ function resultado(aba) {
     sq: c.sqcand, nome: nomeBonito(c.nm, dec(c.cc).split(' - ')[0].trim()), numero: c.n, partido: dec(c.cc).split(' - ')[0].trim(),
     votos: num(c.vap), pct: pnum(c.pvap), st: dec(c.st).toUpperCase(), foto: raw.manual ? (c.foto || '') : urlFoto(aba, d.turno, c.sqcand),
   }));
-  return { cands, secoes: pnum(raw.pst), consulta: new Date(d.ok).toLocaleTimeString('pt-BR'), turno: d.turno, manual: !!raw.manual };
+  // deputados: com eleitos marcados (parcial ou TSE), as telas mostram só quem está entrando — os mais votados entre os eleitos
+  const eleitos = aba.lista ? cands.filter(c => c.st.startsWith('ELEITO')) : [];
+  const soEleitos = eleitos.length > 0, parcial = eleitos.some(c => c.st.includes('PARCIAL'));
+  return { cands: soEleitos ? eleitos : cands, soEleitos, parcial, secoes: pnum(raw.pst), consulta: new Date(d.ok).toLocaleTimeString('pt-BR'), turno: d.turno, manual: !!raw.manual };
 }
 

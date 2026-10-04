@@ -47,7 +47,7 @@ function render(trocouAba) {
   svg.querySelectorAll('.pino').forEach(p => p.classList.toggle('ativo', p.id === 'pino-' + uf));
   // cabeçalho
   const turnoTxt = res && res.turno !== TURNO ? (aba.cargo > 3 ? 'RESULTADO FINAL' : 'RESULTADO DO 1º TURNO')
-    : `APURAÇÃO · ${TURNO}º TURNO` + (aba.sub ? ` · ${aba.sub}` : '');
+    : `APURAÇÃO · ${TURNO}º TURNO` + (res && res.soEleitos ? ` · ELEITOS MAIS VOTADOS${res.parcial ? ' (PARCIAL)' : ''}` : aba.sub ? ` · ${aba.sub}` : '');
   document.getElementById('sobre').textContent = turnoTxt;
   document.getElementById('simtag').innerHTML = SIM ? '<span class="sim">SIMULAÇÃO 2022</span>' : '';
   document.getElementById('cargo').textContent = aba.titulo;

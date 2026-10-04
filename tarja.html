@@ -59,10 +59,10 @@
 <div id="stage"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script src="sync.js?v=20261004j"></script>
-<script src="dados.js?v=20261004j"></script>
-<script src="pesquisas.js?v=20261004j"></script>
-<script src="exportar.js?v=20261004j"></script>
+<script src="sync.js?v=20261004k"></script>
+<script src="dados.js?v=20261004k"></script>
+<script src="pesquisas.js?v=20261004k"></script>
+<script src="exportar.js?v=20261004k"></script>
 <script>
 // Tarja (lower third) para o vMix, fundo transparente.
 //   ?tipo=apuracao#ce  → os 2 mais votados da disputa (deputados #df-ce / #de-ce: os 5 mais votados) (TSE, atualiza sozinha; &sala= segue o controle do celular; &sim=1 simulação)
@@ -89,7 +89,7 @@ function daApuracao() {
   return {
     aba, casas: 2, lista: !!aba.lista,
     cands: r.cands.slice(0, aba.lista ? 5 : 2).map(c => ({ nome: c.nome, partido: c.partido, pct: c.pct, sub: c.votos ? `${c.votos.toLocaleString('pt-BR')} VOTOS` : '', foto: c.foto, tag: tag(c) })),
-    letreiro: `APURAÇÃO DE VOTOS EM TEMPO REAL · ${rot}${aba.lista ? ' · MAIS VOTADOS' : ''}${r.turno === 2 ? ' · 2º TURNO' : ''} · ${fnum(r.secoes, 2)}% DAS SEÇÕES APURADAS · FONTE: TSE`,
+    letreiro: `APURAÇÃO DE VOTOS EM TEMPO REAL · ${rot}${aba.lista ? (r.soEleitos ? ` · MAIS VOTADOS ENTRE OS ELEITOS${r.parcial ? ' (PARCIAL)' : ''}` : ' · MAIS VOTADOS') : ''}${r.turno === 2 ? ' · 2º TURNO' : ''} · ${fnum(r.secoes, 2)}% DAS SEÇÕES APURADAS · FONTE: TSE`,
   };
 }
 function daPesquisa() {
