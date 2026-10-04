@@ -238,11 +238,23 @@ async function ciclo(abas = ABAS) {
 }
 
 /* ======================= normalização ======================= */
+// antes do 1º voto (tudo zerado) a ordem do TSE é aleatória: usa as pesquisas (pesquisas.js, se a página carregou) para
+// pôr os principais na frente; com voto apurado, vale só a votação
+const semAcento = t => String(t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toUpperCase().trim();
+function pesoPesquisa(aba) {
+  const lista = window.PESQUISAS || [], cargo = { 1: 'PRESIDENTE', 3: 'GOVERNADOR', 5: 'SENADO' }[aba.cargo];
+  const peso = {};
+  for (const p of lista) if (p.cargo === cargo && p.uf === aba.abr)
+    for (const i of p.itens) if (i.tipo !== 'outro') { const n = semAcento(i.nome); peso[n] = Math.max(peso[n] || 0, i.pct); }
+  return nome => { const n = semAcento(nome); let m = 0; for (const k in peso) if (k === n || k.startsWith(n + ' ') || n.startsWith(k + ' ')) m = Math.max(m, peso[k]); return m; };
+}
 function resultado(aba) {
   const d = dados[aba.id];
   if (!d) return null;
   const raw = d.raw;
-  const cands = [...raw.cand].sort((a, b) => num(b.vap) - num(a.vap) || pnum(b.pvap) - pnum(a.pvap) || num(a.seq) - num(b.seq)).map(c => ({
+  const zerado = raw.cand.every(c => !num(c.vap));
+  const peso = zerado ? pesoPesquisa(aba) : () => 0;
+  const cands = [...raw.cand].sort((a, b) => num(b.vap) - num(a.vap) || pnum(b.pvap) - pnum(a.pvap) || peso(b.nm) - peso(a.nm) || num(a.seq) - num(b.seq)).map(c => ({
     sq: c.sqcand, nome: nomeBonito(c.nm, dec(c.cc).split(' - ')[0].trim()), numero: c.n, partido: dec(c.cc).split(' - ')[0].trim(),
     votos: num(c.vap), pct: pnum(c.pvap), st: dec(c.st).toUpperCase(), foto: raw.manual ? (c.foto || '') : urlFoto(aba, d.turno, c.sqcand),
   }));
