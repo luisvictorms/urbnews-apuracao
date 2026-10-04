@@ -78,6 +78,11 @@ function urlRes(aba, turno) {
   const arq = `${aba.abr}-c${String(aba.cargo).padStart(4, '0')}-e${String(e).padStart(6, '0')}-r.json`;
   return SIM ? `sim2022/${e}/${aba.abr}/${arq}` : `${TSE}/oficial/${CICLO}/${e}/dados-simplificados/${aba.abr}/${arq}`;
 }
+// 2026: o TSE passou a publicar o resultado assinado (.jws) em dados/<uf>/<uf>-cXXXX-eYYYYYY-u.jws (app Resultados novo)
+function urlU(aba, turno) {
+  const e = eleDe(aba, turno);
+  return `${TSE}/oficial/${CICLO}/${e}/dados/${aba.abr}/${aba.abr}-c${String(aba.cargo).padStart(4, '0')}-e${String(e).padStart(6, '0')}-u.jws`;
+}
 function urlFoto(aba, turno, sq) {
   return SIM ? `sim2022/fotos/${aba.abr}/${sq}.jpeg` : `${TSE}/oficial/${CICLO}/${eleDe(aba, turno)}/fotos/${aba.abr}/${sq}.jpeg`;
 }
@@ -101,25 +106,52 @@ function lerCodigos(cfg, cod = { 1: {}, 2: {} }) {
   }
   return cod;
 }
+// códigos publicados pelo TSE em 30/09/2026 — reserva se o ele-c.json falhar
+const COD_2026 = { 1: { federal: '6257', estadual: '6259' }, 2: { federal: '6258', estadual: '6260' } };
 async function descobrir() {
   if (SIM || (codigos[TURNO].federal && codigos[TURNO].estadual)) return;
   try {
     const cfg = await fetch(`${TSE}/oficial/comum/config/ele-c.json`, { cache: 'no-cache' }).then(r => r.json());
     lerCodigos(cfg, codigos);
   } catch (e) { console.warn('config TSE', e); }
+  for (const t of [1, 2]) for (const k of ['federal', 'estadual']) codigos[t][k] = codigos[t][k] || COD_2026[t][k];
 }
 
-// o TSE já começou a publicar a apuração de 2026? (basta existir o arquivo de resultado, mesmo zerado)
-// testa Presidente (Brasil) e Governador do CE no turno atual
+// .jws = cabeçalho.payload.assinatura (base64url); o payload é o JSON do resultado
+function lerJWS(txt) {
+  let p = txt.trim().split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+  p += '='.repeat((4 - p.length % 4) % 4);
+  const bytes = Uint8Array.from(atob(p), ch => ch.charCodeAt(0));
+  let t;
+  try { t = new TextDecoder('utf-8', { fatal: true }).decode(bytes); } catch (e) { t = new TextDecoder('windows-1252').decode(bytes); }
+  return JSON.parse(t);
+}
+// formato novo (carg > agr[coligação] > par[partido] > cand) -> formato antigo (lista cand) que as telas usam
+function doU(d, cargo) {
+  const cg = (d.carg || []).find(c => String(c.cd) === String(cargo)) || (d.carg || [])[0] || {};
+  const cand = [];
+  for (const a of cg.agr || []) for (const par of a.par || []) for (const c of par.cand || [])
+    cand.push({ seq: c.seq, sqcand: c.sqcand, n: c.n, nm: c.nmu || c.nm, cc: par.sg || a.com || '', e: c.e, st: c.st, dvt: c.dvt, vap: c.vap, pvap: c.pvap });
+  return { ...d, pst: (d.s || {}).pst || d.pst || '0,00', cand };
+}
+async function buscarU(url, cargo) {
+  const r = await fetch(url, { cache: 'no-cache' });
+  if (!r.ok) return null;                                    // 404/403 = ainda não publicado
+  const d = doU(lerJWS(await r.text()), cargo);
+  return d.cand.length ? d : null;
+}
+
+// o TSE já começou a apuração de 2026? Os arquivos com todos zerados existem desde a véspera, então vale quando
+// já há seção apurada OU passou das 17h (Brasília) do dia da votação do turno. Testa Presidente (BR) e Governador (CE).
+const INICIO = { 1: new Date('2026-10-04T17:00:00-03:00'), 2: new Date('2026-10-25T17:00:00-03:00') };
 async function tseAoVivo() {
   try {
-    const cfg = await fetch(`${TSE}/oficial/comum/config/ele-c.json`, { cache: 'no-store' }).then(r => r.json());
-    const c = lerCodigos(cfg)[TURNO] || {};
-    const alvos = [[c.federal, 'br', 1], [c.estadual, 'ce', 3]].filter(x => x[0]);
-    for (const [e, uf, cargo] of alvos) {
-      const u = `${TSE}/oficial/ele2026/${e}/dados-simplificados/${uf}/${uf}-c${String(cargo).padStart(4, '0')}-e${String(e).padStart(6, '0')}-r.json`;
-      const r = await fetch(u, { cache: 'no-store' });
-      if (r.ok && ((await r.json()).cand || []).length) return true;
+    let c = COD_2026[TURNO];
+    try { c = { ...c, ...(lerCodigos(await fetch(`${TSE}/oficial/comum/config/ele-c.json`, { cache: 'no-store' }).then(r => r.json()))[TURNO] || {}) }; } catch (e) {}
+    for (const [e, uf, cargo] of [[c.federal, 'br', 1], [c.estadual, 'ce', 3]]) {
+      const u = `${TSE}/oficial/ele2026/${e}/dados/${uf}/${uf}-c${String(cargo).padStart(4, '0')}-e${String(e).padStart(6, '0')}-u.jws?nc=${Date.now()}`;
+      const d = await buscarU(u, cargo);
+      if (d && (pnum(d.pst) > 0 || Date.now() >= INICIO[TURNO])) return true;
     }
   } catch (e) { console.warn('TSE ao vivo?', e); }
   return false;
@@ -140,6 +172,9 @@ if (SIM && !EXPORT && Q.get('auto') !== '0') {
 
 async function buscar(aba, turno) {
   if (!eleDe(aba, turno)) return null;
+  if (!SIM) {                                                // 2026: arquivo novo (.jws); o antigo (-r.json) fica de reserva
+    try { const d = await buscarU(urlU(aba, turno), aba.cargo); if (d) return d; } catch (e) { console.warn('jws', aba.id, e); }
+  }
   const r = await fetch(urlRes(aba, turno), { cache: 'no-cache' });
   if (r.status === 404) return null;
   if (!r.ok) throw new Error(r.status);
