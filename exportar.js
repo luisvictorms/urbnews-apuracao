@@ -52,10 +52,25 @@ window.Exportar = (function () {
     });
   }
 
+  // fotos de outro site (TSE): a tela carregou sem CORS e o navegador guardou essa cópia em cache (sem liberação),
+  // então o html-to-image não consegue ler. Recarrega com crossorigin + endereço próprio; se mesmo assim falhar, tira a foto.
+  async function liberarFotos() {
+    await Promise.all([...document.images].filter(i => i.src && new URL(i.src, location.href).origin !== location.origin && !i.dataset.cors)
+      .map(i => new Promise(ok => {
+        i.dataset.cors = '1';
+        i.addEventListener('load', ok, { once: true });
+        i.addEventListener('error', () => { i.remove(); ok(); }, { once: true });
+        i.crossOrigin = 'anonymous';
+        i.src = i.src + (i.src.includes('?') ? '&' : '?') + 'cors=1';
+      })));
+  }
+  const VAZIO = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
+
   async function preparar() {
     await pronto;
     await carregar();
     await document.fonts.ready;
+    await liberarFotos();
     await Promise.all([...document.images].map(i => i.decode().catch(() => {})));
     const st = stage();                               // tira a escala/centralização da tela (só nesta página de exportação)
     Object.assign(st.style, { left: '0px', top: '0px', transform: 'none' });
@@ -68,7 +83,7 @@ window.Exportar = (function () {
   async function quadro(ms) {
     const st = stage();
     return htmlToImage.toCanvas(st, {
-      width: st.offsetWidth, height: st.offsetHeight, pixelRatio: 1, fontEmbedCSS: fontCSS,
+      width: st.offsetWidth, height: st.offsetHeight, pixelRatio: 1, fontEmbedCSS: fontCSS, imagePlaceholder: VAZIO,
     });
   }
 
