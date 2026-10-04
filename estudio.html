@@ -115,11 +115,10 @@
     <button data-v="tse">TSE ao vivo</button>
     <button data-v="sim">Simulação 2022</button>
   </div>
+  <!-- 04/10/2026: só 1º turno (sem Automático/2º turno) — para o 2º turno, trocar o botão e o est.turno abaixo -->
   <div class="rot">TURNO</div>
-  <div class="seg c3" id="turno">
-    <button data-v="">Automático</button>
+  <div class="seg" id="turno">
     <button data-v="1">1º turno</button>
-    <button data-v="2">2º turno</button>
   </div>
   </div>
 
@@ -146,10 +145,10 @@
   <div class="quadro" id="quadro"><iframe id="prev" title="Pré-visualização"></iframe></div>
 </main>
 
-<script src="dados.js?v=20261004c"></script>
-<script src="pesquisas.js?v=20261004c"></script>
-<script src="comparativos.js?v=20261004c"></script>
-<script src="formatos.js?v=20261004c"></script>
+<script src="dados.js?v=20261004d"></script>
+<script src="pesquisas.js?v=20261004d"></script>
+<script src="comparativos.js?v=20261004d"></script>
+<script src="formatos.js?v=20261004d"></script>
 <script>
 // Estúdio: escolhe tipo/formato/disputa, mostra a prévia e exporta vídeo (10 s) ou o quadro final.
 const TAM = { h: [1920, 1080], v: [1080, 1920], f: [1080, 1350] };
@@ -179,9 +178,10 @@ function montarLote() {
 const est = { tipo: 'resultado', formato: 'f', disputa: 'br', fonte: 'sim', turno: '', pesquisa: PESQUISAS[0].id, comparativo: COMPARATIVOS[0].id, tarja: 'a:br', pos: 1, lote: [], dif: '' };
 try { Object.assign(est, JSON.parse(localStorage.getItem('estudio') || '{}')); } catch (e) {}
 est.fonte = 'tse';   // só dados do TSE (simulação 2022 retirada)
+est.turno = '1';     // só 1º turno
 const $ = id => document.getElementById(id);
 
-const VERSAO = '20261004c';   // muda a cada publicação: as telas nunca vêm do cache antigo
+const VERSAO = '20261004d';   // muda a cada publicação: as telas nunca vêm do cache antigo
 function urlDe(extra = {}) {
   const q = new URLSearchParams();
   q.set('v', VERSAO);
