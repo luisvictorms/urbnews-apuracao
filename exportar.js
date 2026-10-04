@@ -141,8 +141,10 @@ window.Exportar = (function () {
     if (!('VideoEncoder' in window)) throw new Error('Este navegador não gera vídeo. Use o Chrome ou o Edge atualizados.');
     await preparar();
     const st = stage(), W = st.offsetWidth, H = st.offsetHeight;
-    const cfg = { codec: 'avc1.640028', width: W, height: H, bitrate: 12e6, framerate: fps };
-    if (!(await VideoEncoder.isConfigSupported(cfg)).supported) cfg.codec = 'avc1.4d0028';
+    // nível H.264 pelo tamanho (macroblocos): 4.0 até 2048×1024; 5.0 até 22080 MB (Super LED 3648×1152); senão 5.1
+    const mb = Math.ceil(W / 16) * Math.ceil(H / 16), nivel = mb <= 8192 ? '28' : mb <= 22080 ? '32' : '33';
+    const cfg = { codec: 'avc1.6400' + nivel, width: W, height: H, bitrate: Math.max(12e6, W * H * fps * .12), framerate: fps };
+    if (!(await VideoEncoder.isConfigSupported(cfg)).supported) cfg.codec = 'avc1.4d00' + nivel;
     const muxer = new Mp4Muxer.Muxer({ target: new Mp4Muxer.ArrayBufferTarget(), video: { codec: 'avc', width: W, height: H }, fastStart: 'in-memory' });
     let erro = null;
     const enc = new VideoEncoder({ output: (c, m) => muxer.addVideoChunk(c, m), error: e => { erro = e; } });

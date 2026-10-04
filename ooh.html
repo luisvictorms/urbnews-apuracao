@@ -15,9 +15,10 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { width: 100%; height: 100%; background: #000; overflow: hidden; }
   body { font-family: "Rethink Sans", sans-serif; color: #fff; }
-  #stage { position: absolute; left: 50%; top: 50%; transform-origin: 0 0; overflow: hidden;
-    background: var(--bg2) url(fundo.jpg) center / cover no-repeat; --acc: #aefd04; }
-  #stage.apu { --acc: #00a2ff; }
+  #stage { position: absolute; left: 50%; top: 50%; transform-origin: 0 0; overflow: hidden; background: #000; }
+  /* cada face é uma tela física (formatos comuns têm 1; o Super LED tem 3: lateral + frente + lateral) */
+  .face { position: absolute; overflow: hidden; background: var(--bg2) url(fundo.jpg) center / cover no-repeat; --acc: #aefd04; }
+  .face.apu { --acc: #00a2ff; }
   /* margem de segurança embaixo (padrão 50 px): só fundo, nenhuma informação — o conteúdo usa a altura que sobra */
   .u { position: absolute; inset: 0 0 var(--margem, 50px) 0; display: flex; }
 
@@ -189,24 +190,25 @@
 <div id="stage"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script src="sync.js?v=20261004g"></script>
-<script src="dados.js?v=20261004g"></script>
-<script src="pesquisas.js?v=20261004g"></script>   <!-- só para ordenar os candidatos antes do 1º voto -->
-<script src="formatos.js?v=20261004g"></script>
-<script src="exportar.js?v=20261004g"></script>
+<script src="sync.js?v=20261004h"></script>
+<script src="dados.js?v=20261004h"></script>
+<script src="pesquisas.js?v=20261004h"></script>   <!-- só para ordenar os candidatos antes do 1º voto -->
+<script src="formatos.js?v=20261004h"></script>
+<script src="exportar.js?v=20261004h"></script>
 <script>
 // OOH: ?arte=vencedores|apuracao &fmt=<id em formatos.js> #aba (deputados nos vencedores: #df-ce:3)
 const ARTE = Q.get('arte') === 'apuracao' ? 'apuracao' : 'vencedores';
 const F = OOH[Q.get('fmt')] || OOH.widefhd;
 const MARGEM = Q.has('margem') ? Math.max(0, +Q.get('margem') || 0) : 50;   // &margem=0 tira a margem
-const W = F.w, H = F.h, HU = H - MARGEM, R = W / HU;             // proporção da área útil
-const FAM = R >= 6 ? 'led' : R >= 2.2 ? 'faixa' : R >= 1.15 ? 'land' : 'port';
-const U = FAM === 'port' ? W / 100 : HU / 100;
+const W = F.w, H = F.h;
+// faces [x, y, largura, altura]: o Super LED (L3D) tem 3 — lateral, frente e lateral; a faixa preta de baixo já é a margem
+const FACES = (F.faces || [[0, 0, W, H]]).map(([x, y, w, h]) => {
+  const mg = F.faces ? 0 : MARGEM, hu = h - mg, r = w / hu;                  // proporção da área útil
+  const fam = r >= 6 ? 'led' : r >= 2.2 ? 'faixa' : r >= 1.15 ? 'land' : 'port';
+  return { x, y, w, h, mg, r, fam, u: fam === 'port' ? w / 100 : hu / 100 };
+});
 const stage = document.getElementById('stage');
-stage.className = `${FAM} ${ARTE === 'apuracao' ? 'apu' : 'venc'}${FAM === 'faixa' && R < 3.3 ? ' estreita' : ''}${FAM === 'port' && R > .7 ? ' baixo' : ''}`;
 Object.assign(stage.style, { width: W + 'px', height: H + 'px' });
-stage.style.setProperty('--u', U + 'px');
-stage.style.setProperty('--margem', MARGEM + 'px');
 
 const lerId = id => { const [a, p] = String(id || '').split(':'); return { aba: ABAS.find(x => x.id === a) || ABAS[0], pos: Math.max(1, +p || 1) }; };
 let { aba, pos } = lerId(location.hash.slice(1) || Q.get('aba'));
@@ -228,7 +230,7 @@ function conteudo() {
   const loc = aba.id === 'br' ? 'BRASIL' : aba.local;
   if (ARTE === 'apuracao') {
     if (!r || !r.cands.length) return { tag: 'APURAÇÃO', tit: titulo(aba, 1), loc, espera: 'Aguardando os primeiros resultados do TSE' };
-    return { tag: `${fmt(r.secoes)}% APURADO`, tit: titulo(aba, 1), loc, cands: r.cands.slice(0, aba.lista ? QTD[FAM] : Math.min(QTD[FAM], r.cands.length)),
+    return { tag: `${fmt(r.secoes)}% APURADO`, tit: titulo(aba, 1), loc, cands: r.cands.slice(0, 3),   // cada face corta em QTD[família]
       rod: `${r.turno === 2 ? '2º turno · ' : ''}Fonte: TSE · ${r.consulta}` };
   }
   if (!r) return { tag: 'AGUARDANDO', tit: titulo(aba, 1), loc, espera: 'Aguardando confirmação do TSE' };
@@ -245,7 +247,7 @@ function conteudo() {
 
 // ---------- montagem ----------
 const T = i => ({ ent: 500 + i * 180, num: 900 + i * 180, dur: 1500 });
-function cand(c, i, n) {
+function cand(c, i, n, FAM) {
   const foto = `<div class="ft" style="font-size:calc(var(--u) * ${FAM === 'led' ? 30 : 12})">${esc(ini(c.nome))}${c.foto ? `<img src="${esc(c.foto)}" alt="" onerror="this.remove()">` : ''}</div>`;
   const pc = `<div class="pc conta" data-i="${i}" data-alvo="${c.pct}">${fmt(c.pct)}<small>%</small></div>`;
   const t = T(i);
@@ -256,16 +258,19 @@ function cand(c, i, n) {
 }
 function montar() {
   const d = conteudo();
-  const n = d.cands ? d.cands.length : 0;
   const logo = `<img class="logo" src="${ARTE === 'apuracao' ? 'logo.png' : 'logo-2026.png'}" alt="urb.NEWS Eleições 2026">`;
-  stage.innerHTML = `<div class="u">
+  stage.innerHTML = FACES.map(f => {
+    const FAM = f.fam, cands = d.cands ? (ARTE === 'apuracao' ? d.cands.slice(0, QTD[FAM]) : d.cands) : [], n = cands.length;
+    const cls = `face ${FAM} ${ARTE === 'apuracao' ? 'apu' : 'venc'}${FAM === 'faixa' && f.r < 3.3 ? ' estreita' : ''}${FAM === 'port' && f.r > .7 ? ' baixo' : ''}`;
+    return `<div class="${cls}" style="left:${f.x}px;top:${f.y}px;width:${f.w}px;height:${f.h}px;--u:${f.u}px;--margem:${f.mg}px"><div class="u">
     ${FAM === 'led' ? logo : ''}
     <div class="esq">${FAM !== 'led' ? logo : ''}<div class="cab"><div class="tag">${esc(d.tag)}</div><div class="tit">${esc(d.tit)}</div><div class="loc">${esc(d.loc)}</div></div>
       ${FAM === 'land' || FAM === 'faixa' ? `<div class="rod">${esc(d.rod || 'Fonte: TSE')}</div>` : ''}</div>
-    <div class="dir ${n > 1 ? 'n2' : ''}">${d.espera ? `<div class="espera">${esc(d.espera)}</div>` : d.cands.map((c, i) => cand(c, i, n)).join('')}</div>
+    <div class="dir ${n > 1 ? 'n2' : ''}">${d.espera ? `<div class="espera">${esc(d.espera)}</div>` : cands.map((c, i) => cand(c, i, n, FAM)).join('')}</div>
     ${FAM === 'port' || FAM === 'led' ? `<div class="rod">${esc(d.rod || 'Fonte: TSE')}</div>` : ''}
-  </div>${SIM ? '<div class="sim">SIMULAÇÃO 2022</div>' : ''}`;
-  requestAnimationFrame(ajustar);
+  </div>${SIM ? '<div class="sim">SIMULAÇÃO 2022</div>' : ''}</div>`;
+  }).join('');
+  requestAnimationFrame(() => [...stage.querySelectorAll('.face')].forEach((el, i) => ajustar(el, FACES[i])));
   return d;
 }
 
@@ -277,11 +282,12 @@ function encolher(el, larg) {
   const w = () => { r.selectNodeContents(el); return r.getBoundingClientRect().width / k; };
   while (w() > larg && fs > 6) { fs *= .94; el.style.fontSize = fs + 'px'; }
 }
-function ajustar() {
-  const esq = stage.querySelector('.esq');
-  if (FAM !== 'led') stage.querySelectorAll('.cab > *').forEach(el => encolher(el, esq.clientWidth));
-  else stage.querySelectorAll('.cab > *').forEach(el => encolher(el, U * 150));
-  const dir = stage.querySelector('.dir'), cs = [...stage.querySelectorAll('.cand')];
+function ajustar(face, f) {
+  const FAM = f.fam, U = f.u;
+  const esq = face.querySelector('.esq');
+  if (FAM !== 'led') face.querySelectorAll('.cab > *').forEach(el => encolher(el, esq.clientWidth));
+  else face.querySelectorAll('.cab > *').forEach(el => encolher(el, U * 150));
+  const dir = face.querySelector('.dir'), cs = [...face.querySelectorAll('.cand')];
   if (FAM === 'land' && ARTE === 'vencedores' && cs.length) {       // 2 fotos lado a lado não passam da largura
     const gap = U * 5, larg = (dir.clientWidth - gap * (cs.length - 1)) / cs.length;
     const h = Math.min(U * 56, larg / .716 - U * 1.4);
