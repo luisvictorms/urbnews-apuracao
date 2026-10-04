@@ -59,10 +59,10 @@
 <div id="stage"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script src="sync.js?v=20261004d"></script>
-<script src="dados.js?v=20261004d"></script>
-<script src="pesquisas.js?v=20261004d"></script>
-<script src="exportar.js?v=20261004d"></script>
+<script src="sync.js?v=20261004e"></script>
+<script src="dados.js?v=20261004e"></script>
+<script src="pesquisas.js?v=20261004e"></script>
+<script src="exportar.js?v=20261004e"></script>
 <script>
 // Tarja (lower third) para o vMix, fundo transparente.
 //   ?tipo=apuracao#ce  → os 2 mais votados da disputa (deputados #df-ce / #de-ce: os 5 mais votados) (TSE, atualiza sozinha; &sala= segue o controle do celular; &sim=1 simulação)
@@ -99,10 +99,12 @@ function daPesquisa() {
   return {
     casas: 0, pesquisa: P,
     cands: cands.map(c => ({ nome: c.nome, pct: c.pct, sub: `${c.partido || ''} · ${P.instituto}`, foto: c.foto ? `fotos-pesquisa/${c.foto}.jpg?v=2` : '' })),
-    letreiro: `PESQUISA ${P.instituto} (${P.divulgacao}) · ${P.cargo} · ${P.local}${P.turno && P.turno !== '1º TURNO' ? ' · ' + P.turno : ''} · ` +
-      `REG. ${P.registro} · ${P.entrevistas} ENTREVISTAS DE ${P.campo} · MARGEM ${P.margem} · CONFIANÇA ${P.confianca} · CONTRATANTE: ${P.contratante}`,
+    // texto enxuto (todos os dados legais da Res. TSE 23.600, sem palavras sobrando) para caber na faixa
+    letreiro: `${P.instituto} ${dataCurta(P)} · ${P.cargo} ${P.local}${P.turno && P.turno !== '1º TURNO' ? ' · ' + P.turno : ''} · ` +
+      `REG. ${P.registro} · ${P.entrevistas} ENTREV. ${P.campo} · ±${String(P.margem).replace(/\s*pontos?/i, '')} P.P. · CONF. ${P.confianca} · CONTRAT.: ${P.contratante}`,
   };
 }
+function dataCurta(P) { const m = /(\d{4})-(\d{2})-(\d{2})$/.exec(P.id); return m ? `${m[3]}/${m[2]}` : `(${P.divulgacao})`; }
 const dadosAtuais = () => TIPO === 'pesquisa' ? daPesquisa() : daApuracao();
 
 // ---------- montagem ----------
@@ -139,10 +141,15 @@ function montar(d) {
   stage.innerHTML = h;
   caberLetreiro();
 }
+// diminui a letra até caber numa linha; se nem com 14 px couber, quebra em 2 linhas dentro da faixa (35 px)
 function caberLetreiro() {
   const el = document.getElementById('letreiro'); let fs = 23;
-  el.style.fontSize = fs + 'px';
-  while (el.scrollWidth > 1302 - 32 && fs > 13) el.style.fontSize = --fs + 'px';
+  Object.assign(el.style, { whiteSpace: '', lineHeight: '', fontSize: fs + 'px' });
+  while (el.scrollWidth > 1302 - 32 && fs > 14) el.style.fontSize = --fs + 'px';
+  if (el.scrollWidth <= 1302 - 32) return;
+  fs = 15;
+  Object.assign(el.style, { whiteSpace: 'normal', lineHeight: '1.08', fontSize: fs + 'px' });
+  while (el.offsetHeight > 33 && fs > 11) el.style.fontSize = --fs + 'px';
 }
 
 let casasAtual = 2;
