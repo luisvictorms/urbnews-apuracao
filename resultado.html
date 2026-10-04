@@ -122,10 +122,10 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script src="sync.js?v=20261004k"></script>
-<script src="dados.js?v=20261004k"></script>
-<script src="pesquisas.js?v=20261004k"></script>   <!-- só para ordenar os candidatos antes do 1º voto -->
-<script src="exportar.js?v=20261004k"></script>
+<script src="sync.js?v=20261004l"></script>
+<script src="dados.js?v=20261004l"></script>
+<script src="pesquisas.js?v=20261004l"></script>   <!-- só para ordenar os candidatos antes do 1º voto -->
+<script src="exportar.js?v=20261004l"></script>
 <script>
 // Resultado: eleito(s) ou os dois do 2º turno da disputa escolhida (celular, teclado ou #aba); fica parado após a animação.
 // h = 1920x1080 · v = 1080x1920 (stories) · f = feed 1080x1350. ?numeros=0 esconde % e votos.
@@ -160,7 +160,7 @@ function montar(aba, d) {
   const cands = d ? d.cands : [];
   const n = cands.length > 1 ? 2 : 1;
   const [tit, sub] = titulos(aba, cands.length);
-  const tag = !d ? 'AGUARDANDO' : d.pos ? `ELEITO${cands[0].st.includes('PARCIAL') ? ' · PARCIAL' : ''} · ${d.pos}º MAIS VOTADO` : d.tipo === 't2' ? '2º TURNO' : n > 1 ? 'ELEITOS' : 'ELEITO';
+  const tag = !d ? 'AGUARDANDO' : d.pos ? `ELEITO${cands[0].st.includes('PARCIAL') ? ' · PARCIAL' : ''} · ${d.pos}º MAIS VOTADO` : (d.tipo === 't2' ? '2º TURNO' : n > 1 ? 'ELEITOS' : 'ELEITO') + (cands.some(c => c.st.includes('PROJE')) ? ' · PROJEÇÃO' : '');
   const miolo = d ? cands.map(c => cartao(c, !!aba.lista)).join('')
     : `<div class="cart"><div class="mold">Aguardando confirmação do TSE<br><i></i><i></i><i></i></div></div>`;
   return `<div class="${d ? '' : 'espera '}n${n}">
@@ -246,7 +246,7 @@ function definida(aba) {
     }
     return { aba, tipo: 'eleito', cands: [eleitos[pos - 1]], r, pos, total: eleitos.length };
   }
-  const t2 = r.cands.filter(c => c.st === '2º TURNO');
+  const t2 = r.cands.filter(c => c.st.startsWith('2º TURNO'));
   if (eleitos.length) return { aba, tipo: 'eleito', cands: eleitos.slice(0, 2), r };
   if (t2.length === 2) return { aba, tipo: 't2', cands: t2, r };
   return null;
@@ -288,7 +288,7 @@ function passo(delta) {
 
 window.aoAtualizar = () => {
   const r = resultado(DISPUTAS[atual]);
-  document.getElementById('rod').textContent = r ? `Fonte: TSE${r.cands.some(c => c.st.includes('PARCIAL')) ? ` · Parcial com ${r.secoes.toLocaleString('pt-BR')}% das seções apuradas` : ''} · Última consulta às ${r.consulta}` : 'Fonte: TSE';
+  document.getElementById('rod').textContent = r ? `Fonte: TSE${r.cands.some(c => c.st.includes('PARCIAL')) ? ` · Parcial com ${r.secoes.toLocaleString('pt-BR')}% das seções apuradas` : r.cands.slice(0, 3).some(c => c.st.includes('PROJE')) ? ` · Projeção com ${r.secoes.toLocaleString('pt-BR')}% das seções apuradas` : ''} · Última consulta às ${r.consulta}` : 'Fonte: TSE';
   mostrar(false);
 };
 

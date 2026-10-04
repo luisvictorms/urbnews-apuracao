@@ -190,11 +190,11 @@
 <div id="stage"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script src="sync.js?v=20261004k"></script>
-<script src="dados.js?v=20261004k"></script>
-<script src="pesquisas.js?v=20261004k"></script>   <!-- só para ordenar os candidatos antes do 1º voto -->
-<script src="formatos.js?v=20261004k"></script>
-<script src="exportar.js?v=20261004k"></script>
+<script src="sync.js?v=20261004l"></script>
+<script src="dados.js?v=20261004l"></script>
+<script src="pesquisas.js?v=20261004l"></script>   <!-- só para ordenar os candidatos antes do 1º voto -->
+<script src="formatos.js?v=20261004l"></script>
+<script src="exportar.js?v=20261004l"></script>
 <script>
 // OOH: ?arte=vencedores|apuracao &fmt=<id em formatos.js> #aba (deputados nos vencedores: #df-ce:3)
 const ARTE = Q.get('arte') === 'apuracao' ? 'apuracao' : 'vencedores';
@@ -234,15 +234,18 @@ function conteudo() {
       rod: `${r.turno === 2 ? '2º turno · ' : ''}Fonte: TSE · ${r.consulta}` };
   }
   if (!r) return { tag: 'AGUARDANDO', tit: titulo(aba, 1), loc, espera: 'Aguardando confirmação do TSE' };
-  const eleitos = r.cands.filter(ehEleito), t2 = r.cands.filter(c => c.st === '2º TURNO');
+  const eleitos = r.cands.filter(ehEleito), t2 = r.cands.filter(c => c.st.startsWith('2º TURNO'));
   if (aba.lista && eleitos.length) {
     if (pos > eleitos.length) pos = 1;
     window.__totalEleitos = eleitos.length;
     const parc = eleitos[pos - 1].st.includes('PARCIAL');
     return { tag: `ELEITO${parc ? ' · PARCIAL' : ''} · ${pos}º MAIS VOTADO`, tit: titulo(aba, 1), loc, cands: [eleitos[pos - 1]], rod: parc ? `Parcial · ${fmt(r.secoes)}% apurado · Fonte: TSE` : 'Fonte: TSE' };
   }
-  if (!aba.lista && eleitos.length) return { tag: eleitos.length > 1 ? 'ELEITOS' : 'ELEITO', tit: titulo(aba, eleitos.length), loc, cands: eleitos.slice(0, 2), rod: 'Fonte: TSE' };
-  if (!aba.lista && t2.length === 2) return { tag: '2º TURNO', tit: titulo(aba, 1), loc, cands: t2, rod: 'Fonte: TSE' };
+  const proj = cs => cs.some(c => c.st.includes('PROJE'));
+  const rodProj = `Projeção · ${fmt(r.secoes)}% apurado · Fonte: TSE`;
+  if (!aba.lista && eleitos.length) { const e2 = eleitos.slice(0, 2), p = proj(e2);
+    return { tag: (e2.length > 1 ? 'ELEITOS' : 'ELEITO') + (p ? ' · PROJEÇÃO' : ''), tit: titulo(aba, e2.length), loc, cands: e2, rod: p ? rodProj : 'Fonte: TSE' }; }
+  if (!aba.lista && t2.length === 2) return { tag: '2º TURNO' + (proj(t2) ? ' · PROJEÇÃO' : ''), tit: titulo(aba, 1), loc, cands: t2, rod: proj(t2) ? rodProj : 'Fonte: TSE' };
   return { tag: 'AGUARDANDO', tit: titulo(aba, 1), loc, espera: 'Aguardando confirmação do TSE' };
 }
 

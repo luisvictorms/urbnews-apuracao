@@ -161,17 +161,28 @@ function definidos(cand, d, cargo) {
   const val = cand.filter(c => !c.dvt || /^v[aá]lido/i.test(c.dvt)).map(c => ({ c, v: +c.vap || 0 })).sort((a, b) => b.v - a.v);
   if (!val.length || !val[0].v) return;
   const vv = val.reduce((s, x) => s + x.v, 0);
-  // quantos outros ainda podem chegar ao voto de x
-  const ameacas = x => val.filter(y => y !== x && y.v + resto >= x.v).length;
+  // PROJEÇÃO (quando a conta garantida ainda não fecha): votos válidos que faltam ≈ eleitores não totalizados ×
+  // (válidos ÷ eleitores das seções já totalizadas), e o resultado precisa aguentar uma virada de 15 pontos nesses votos.
+  const est = +((d.e || {}).est) || 0, RV = est > 0 ? resto * Math.min(2, vv / est) : resto, FOLGA = .15;
+  // quantos outros ainda podem chegar ao voto de x ganhando g votos a mais que ele
+  const ameacas = (x, g) => val.filter(y => y !== x && y.v + g >= x.v).length;
   if (cargo === 5) {                                             // Senado 2026: 2 vagas, cada eleitor dá até 1 voto a cada candidato
-    for (const x of val.slice(0, 2)) if (ameacas(x) < 2) x.c.st = 'Eleito';
+    for (const x of val.slice(0, 2)) {
+      if (ameacas(x, resto) < 2) x.c.st = 'Eleito';
+      else if (ameacas(x, FOLGA * RV) < 2) x.c.st = 'Eleito (projeção)';
+    }
     return;
   }
-  const lider = val[0];
+  const lider = val[0], s = lider.v / vv;
   if (d.md === 'e' || lider.v > vv - lider.v + resto) { lider.c.st = 'Eleito'; return; }
   // 2º turno garantido: ninguém mais passa de 50% dos válidos e os dois primeiros não podem mais ser alcançados
   const ninguemLevaNo1 = val.every(x => 2 * (x.v + resto) <= vv + resto);
-  if (ninguemLevaNo1 && val.slice(0, 2).every(x => ameacas(x) < 2)) val.slice(0, 2).forEach(x => { x.c.st = '2º turno'; });
+  if (ninguemLevaNo1 && val.slice(0, 2).every(x => ameacas(x, resto) < 2)) { val.slice(0, 2).forEach(x => { x.c.st = '2º turno'; }); return; }
+  // projeção: líder segue acima de 50% mesmo levando 15 pontos a menos nos votos que faltam
+  if (lider.v + Math.max(0, s - FOLGA) * RV > (vv + RV) / 2) { lider.c.st = 'Eleito (projeção)'; return; }
+  const semMaioria = lider.v + Math.min(1, s + FOLGA) * RV <= (vv + RV) / 2;
+  if ((ninguemLevaNo1 || semMaioria) && val.slice(0, 2).every(x => ameacas(x, FOLGA * RV) < 2))
+    val.slice(0, 2).forEach(x => { if (!x.c.st) x.c.st = '2º turno (projeção)'; });
 }
 async function buscarU(url, cargo) {
   const r = await fetch(url, { cache: 'no-cache' });
