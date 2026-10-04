@@ -132,7 +132,31 @@ function doU(d, cargo) {
   const cand = [];
   for (const a of cg.agr || []) for (const par of a.par || []) for (const c of par.cand || [])
     cand.push({ seq: c.seq, sqcand: c.sqcand, n: c.n, nm: c.nmu || c.nm, cc: par.sg || a.com || '', e: c.e, st: c.st, dvt: c.dvt, vap: c.vap, pvap: c.pvap });
+  definidos(cand, d, +cargo);
   return { ...d, pst: (d.s || {}).pst || d.pst || '0,00', cand };
+}
+// O TSE demora a preencher "st" (Eleito / 2º turno). Enquanto isso:
+// - governador/presidente: d.md === 'e' é o "matematicamente definido" do próprio TSE (o app dele já mostra ELEITO);
+// - conta conservadora: mesmo que TODO eleitor das seções ainda não totalizadas (d.e.esnt) votasse contra, o resultado não muda.
+// Deputados (proporcional) ficam só com o st do TSE.
+function definidos(cand, d, cargo) {
+  if (![1, 3, 5].includes(cargo) || !cand.length || cand.some(c => (c.st || '').trim())) return;
+  const resto = +((d.e || {}).esnt);
+  if (!Number.isFinite(resto)) return;
+  const val = cand.filter(c => !c.dvt || /^v[aá]lido/i.test(c.dvt)).map(c => ({ c, v: +c.vap || 0 })).sort((a, b) => b.v - a.v);
+  if (!val.length || !val[0].v) return;
+  const vv = val.reduce((s, x) => s + x.v, 0);
+  // quantos outros ainda podem chegar ao voto de x
+  const ameacas = x => val.filter(y => y !== x && y.v + resto >= x.v).length;
+  if (cargo === 5) {                                             // Senado 2026: 2 vagas, cada eleitor dá até 1 voto a cada candidato
+    for (const x of val.slice(0, 2)) if (ameacas(x) < 2) x.c.st = 'Eleito';
+    return;
+  }
+  const lider = val[0];
+  if (d.md === 'e' || lider.v > vv - lider.v + resto) { lider.c.st = 'Eleito'; return; }
+  // 2º turno garantido: ninguém mais passa de 50% dos válidos e os dois primeiros não podem mais ser alcançados
+  const ninguemLevaNo1 = val.every(x => 2 * (x.v + resto) <= vv + resto);
+  if (ninguemLevaNo1 && val.slice(0, 2).every(x => ameacas(x) < 2)) val.slice(0, 2).forEach(x => { x.c.st = '2º turno'; });
 }
 async function buscarU(url, cargo) {
   const r = await fetch(url, { cache: 'no-cache' });
