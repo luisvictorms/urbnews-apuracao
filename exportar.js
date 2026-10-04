@@ -137,7 +137,8 @@ window.Exportar = (function () {
     return n;                                                    // quantos quadros entraram
   }
 
-  async function video({ segundos = 10, fps = 30, intro = null, progresso = () => {} } = {}) {
+  // duracao: tamanho TOTAL do vídeo (abertura + arte), ex.: TER = 15 s; sem ela a arte tem 'segundos' depois da abertura
+  async function video({ segundos = 10, fps = 30, intro = null, duracao = 0, progresso = () => {} } = {}) {
     if (!('VideoEncoder' in window)) throw new Error('Este navegador não gera vídeo. Use o Chrome ou o Edge atualizados.');
     await preparar();
     const st = stage(), W = st.offsetWidth, H = st.offsetHeight;
@@ -149,11 +150,12 @@ window.Exportar = (function () {
     let erro = null;
     const enc = new VideoEncoder({ output: (c, m) => muxer.addVideoChunk(c, m), error: e => { erro = e; } });
     enc.configure(cfg);
-    const total = Math.round(segundos * fps);
+    let total = Math.round(segundos * fps);
     // abertura antes da arte (mesmo tamanho, sem áudio); a arte continua com os seus 10 s
     let base = 0;
     const totalIntro = intro ? 100 : 0;                          // só para a barra de progresso (~3,3 s)
     if (intro) base = await gravarIntro(intro, enc, fps, q => progresso(q * totalIntro / (totalIntro + total)));
+    if (duracao) total = Math.max(fps, Math.round(duracao * fps) - base);
     // só fotografa quando a imagem muda: movimento = todo quadro; loops lentos = 10/s; parado = reaproveita
     let cv = null, ultimoMs = -1e9;
     for (let i = 0; i < total; i++) {

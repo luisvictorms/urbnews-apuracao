@@ -145,10 +145,10 @@
   <div class="quadro" id="quadro"><iframe id="prev" title="Pré-visualização"></iframe></div>
 </main>
 
-<script src="dados.js?v=20261004h"></script>
-<script src="pesquisas.js?v=20261004h"></script>
-<script src="comparativos.js?v=20261004h"></script>
-<script src="formatos.js?v=20261004h"></script>
+<script src="dados.js?v=20261004j"></script>
+<script src="pesquisas.js?v=20261004j"></script>
+<script src="comparativos.js?v=20261004j"></script>
+<script src="formatos.js?v=20261004j"></script>
 <script>
 // Estúdio: escolhe tipo/formato/disputa, mostra a prévia e exporta vídeo (10 s) ou o quadro final.
 const TAM = { h: [1920, 1080], v: [1080, 1920], f: [1080, 1350] };
@@ -181,7 +181,7 @@ est.fonte = 'tse';   // só dados do TSE (simulação 2022 retirada)
 est.turno = '1';     // só 1º turno
 const $ = id => document.getElementById(id);
 
-const VERSAO = '20261004h';   // muda a cada publicação: as telas nunca vêm do cache antigo
+const VERSAO = '20261004j';   // muda a cada publicação: as telas nunca vêm do cache antigo
 function urlDe(extra = {}) {
   const q = new URLSearchParams();
   q.set('v', VERSAO);
@@ -386,10 +386,10 @@ async function exportar(tipo) {
   try {
     const w = await abrirExport();
     const blob = tipo === 'video'
-      ? await w.Exportar.video({ segundos: 10, fps: 30, intro: ehOOH() ? fOOH().intro : null, progresso: p => progresso(p, `Gerando vídeo… ${Math.round(p * 100)}%`) })
+      ? await w.Exportar.video({ segundos: 10, fps: 30, intro: ehOOH() ? fOOH().intro : null, duracao: ehOOH() ? fOOH().duracao || 0 : 0, progresso: p => progresso(p, `Gerando vídeo… ${Math.round(p * 100)}%`) })
       : await w.Exportar.imagem(9900);
     baixar(blob, nomeArquivo(tipo === 'video' ? 'mp4' : 'png'));
-    mensagem(tipo === 'video' ? (ehOOH() && fOOH().intro ? 'Vídeo pronto: abertura + 10 s da arte (30 fps, MP4).' : 'Vídeo pronto (10 s, 30 fps, MP4).') : 'Imagem pronta (quadro final, PNG).');
+    mensagem(tipo === 'video' ? (ehOOH() && fOOH().duracao ? `Vídeo pronto: ${fOOH().duracao} s no total, com a abertura (30 fps, MP4).` : ehOOH() && fOOH().intro ? 'Vídeo pronto: abertura + 10 s da arte (30 fps, MP4).' : 'Vídeo pronto (10 s, 30 fps, MP4).') : 'Imagem pronta (quadro final, PNG).');
   } catch (e) {
     console.error(e);
     mensagem('Não deu para exportar: ' + (e.message || e), true);
@@ -435,7 +435,7 @@ $('bLote').addEventListener('click', async () => {
       progresso(i / lista.length, `Formato ${i + 1} de ${lista.length} · ${rot}…`);
       try {
         const w = await abrirExport();
-        const blob = await w.Exportar.video({ segundos: 10, fps: 30, intro: ehOOH() ? fOOH().intro : null,
+        const blob = await w.Exportar.video({ segundos: 10, fps: 30, intro: ehOOH() ? fOOH().intro : null, duracao: ehOOH() ? fOOH().duracao || 0 : 0,
           progresso: q => progresso((i + q) / lista.length, `Formato ${i + 1} de ${lista.length} · ${rot} · ${Math.round(q * 100)}%`) });
         zip.file(nomeArquivo('mp4'), blob);
         feitos++;
@@ -449,7 +449,7 @@ $('bLote').addEventListener('click', async () => {
       progresso(1, 'Juntando no ZIP…');
       baixar(await zip.generateAsync({ type: 'blob', compression: 'STORE' }), nomeZip);
     }
-    mensagem((feitos ? `ZIP pronto com ${feitos} vídeo${feitos > 1 ? 's' : ''} (MP4: abertura + 10 s da arte).` : 'Nenhum vídeo gerado.') +
+    mensagem((feitos ? `ZIP pronto com ${feitos} vídeo${feitos > 1 ? 's' : ''} (MP4: abertura + 10 s da arte${lista.includes('o:ter') ? '; TER com 15 s no total' : ''}).` : 'Nenhum vídeo gerado.') +
       (falhas.length ? ' Não saíram: ' + falhas.join(' · ') : ''), !feitos || falhas.length > 0);
   } catch (e) {
     console.error(e);
@@ -472,7 +472,7 @@ $('bTodos').addEventListener('click', async () => {
       progresso((p - 1) / total, `Eleito ${p}${total > 1 ? ' de ' + total : ''}…`);
       const w = await abrirExport();
       if (p === 1) total = w.__totalEleitos || 1;
-      if (ehOOH()) baixar(await w.Exportar.video({ segundos: 10, fps: 30, intro: ehOOH() ? fOOH().intro : null, progresso: q => progresso((p - 1 + q) / total, `Eleito ${p} de ${total} · vídeo ${Math.round(q * 100)}%`) }), nomeArquivo('mp4'));
+      if (ehOOH()) baixar(await w.Exportar.video({ segundos: 10, fps: 30, intro: ehOOH() ? fOOH().intro : null, duracao: ehOOH() ? fOOH().duracao || 0 : 0, progresso: q => progresso((p - 1 + q) / total, `Eleito ${p} de ${total} · vídeo ${Math.round(q * 100)}%`) }), nomeArquivo('mp4'));
       else baixar(await w.Exportar.imagem(9900), nomeArquivo('png'));
       feitos++;
       $('exp')?.remove();

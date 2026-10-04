@@ -190,11 +190,11 @@
 <div id="stage"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script src="sync.js?v=20261004h"></script>
-<script src="dados.js?v=20261004h"></script>
-<script src="pesquisas.js?v=20261004h"></script>   <!-- só para ordenar os candidatos antes do 1º voto -->
-<script src="formatos.js?v=20261004h"></script>
-<script src="exportar.js?v=20261004h"></script>
+<script src="sync.js?v=20261004j"></script>
+<script src="dados.js?v=20261004j"></script>
+<script src="pesquisas.js?v=20261004j"></script>   <!-- só para ordenar os candidatos antes do 1º voto -->
+<script src="formatos.js?v=20261004j"></script>
+<script src="exportar.js?v=20261004j"></script>
 <script>
 // OOH: ?arte=vencedores|apuracao &fmt=<id em formatos.js> #aba (deputados nos vencedores: #df-ce:3)
 const ARTE = Q.get('arte') === 'apuracao' ? 'apuracao' : 'vencedores';
@@ -238,7 +238,8 @@ function conteudo() {
   if (aba.lista && eleitos.length) {
     if (pos > eleitos.length) pos = 1;
     window.__totalEleitos = eleitos.length;
-    return { tag: `ELEITO · ${pos}º MAIS VOTADO`, tit: titulo(aba, 1), loc, cands: [eleitos[pos - 1]], rod: 'Fonte: TSE' };
+    const parc = eleitos[pos - 1].st.includes('PARCIAL');
+    return { tag: `ELEITO${parc ? ' · PARCIAL' : ''} · ${pos}º MAIS VOTADO`, tit: titulo(aba, 1), loc, cands: [eleitos[pos - 1]], rod: parc ? `Parcial · ${fmt(r.secoes)}% apurado · Fonte: TSE` : 'Fonte: TSE' };
   }
   if (!aba.lista && eleitos.length) return { tag: eleitos.length > 1 ? 'ELEITOS' : 'ELEITO', tit: titulo(aba, eleitos.length), loc, cands: eleitos.slice(0, 2), rod: 'Fonte: TSE' };
   if (!aba.lista && t2.length === 2) return { tag: '2º TURNO', tit: titulo(aba, 1), loc, cands: t2, rod: 'Fonte: TSE' };

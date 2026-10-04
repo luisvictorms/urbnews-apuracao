@@ -59,10 +59,10 @@
 <div id="stage"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script src="sync.js?v=20261004h"></script>
-<script src="dados.js?v=20261004h"></script>
-<script src="pesquisas.js?v=20261004h"></script>
-<script src="exportar.js?v=20261004h"></script>
+<script src="sync.js?v=20261004j"></script>
+<script src="dados.js?v=20261004j"></script>
+<script src="pesquisas.js?v=20261004j"></script>
+<script src="exportar.js?v=20261004j"></script>
 <script>
 // Tarja (lower third) para o vMix, fundo transparente.
 //   ?tipo=apuracao#ce  → os 2 mais votados da disputa (deputados #df-ce / #de-ce: os 5 mais votados) (TSE, atualiza sozinha; &sala= segue o controle do celular; &sim=1 simulação)
@@ -85,7 +85,7 @@ function daApuracao() {
   const r = resultado(aba);
   const rot = aba.id === 'br' ? 'PRESIDENTE DO BRASIL' : `${aba.titulo} · ${aba.local}`;
   if (!r || !r.cands.length) return { aba, vazio: 'Aguardando os primeiros resultados do TSE…', letreiro: `APURAÇÃO DE VOTOS EM TEMPO REAL · ${rot}` };
-  const tag = c => c.st.startsWith('ELEITO') ? 'ELEITO' : c.st === '2º TURNO' ? '2º TURNO' : '';
+  const tag = c => c.st.startsWith('ELEITO') && !c.st.includes('PARCIAL') ? 'ELEITO' : c.st === '2º TURNO' ? '2º TURNO' : '';
   return {
     aba, casas: 2, lista: !!aba.lista,
     cands: r.cands.slice(0, aba.lista ? 5 : 2).map(c => ({ nome: c.nome, partido: c.partido, pct: c.pct, sub: c.votos ? `${c.votos.toLocaleString('pt-BR')} VOTOS` : '', foto: c.foto, tag: tag(c) })),

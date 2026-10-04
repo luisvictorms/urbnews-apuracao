@@ -133,7 +133,22 @@ function doU(d, cargo) {
   for (const a of cg.agr || []) for (const par of a.par || []) for (const c of par.cand || [])
     cand.push({ seq: c.seq, sqcand: c.sqcand, n: c.n, nm: c.nmu || c.nm, cc: par.sg || a.com || '', e: c.e, st: c.st, dvt: c.dvt, vap: c.vap, pvap: c.pvap });
   definidos(cand, d, +cargo);
+  parcialDeputados(cand, cg, +cargo);
   return { ...d, pst: (d.s || {}).pst || d.pst || '0,00', cand };
+}
+// Deputados: enquanto o TSE não marca ninguém, usa a distribuição PARCIAL de vagas que ele mesmo publica
+// (agr.vag = vagas do partido/federação com os votos de agora): os 'vag' mais votados de cada um, com ao menos 10% do quociente.
+// Fica marcado "Eleito (parcial)" — as telas mostram ELEITO · PARCIAL; vira definitivo quando o TSE preencher o st.
+function parcialDeputados(cand, cg, cargo) {
+  if (![6, 7].includes(cargo) || !cand.length || cand.some(c => (c.st || '').trim())) return;
+  const qe = +cg.qe || 0, sq = new Set();
+  for (const a of cg.agr || []) {
+    const vag = +a.vag || 0;
+    if (!vag) continue;
+    (a.par || []).flatMap(p => p.cand || []).filter(c => (+c.vap || 0) > 0 && (+c.vap || 0) >= qe * .1)
+      .sort((x, y) => (+y.vap || 0) - (+x.vap || 0)).slice(0, vag).forEach(c => sq.add(c.sqcand));
+  }
+  cand.forEach(c => { if (sq.has(c.sqcand)) c.st = 'Eleito (parcial)'; });
 }
 // O TSE demora a preencher "st" (Eleito / 2º turno). Enquanto isso:
 // - governador/presidente: d.md === 'e' é o "matematicamente definido" do próprio TSE (o app dele já mostra ELEITO);

@@ -71,7 +71,7 @@ function render(trocouAba) {
   box.classList.toggle('mini', !!aba.lista);
   const liderSq = res.secoes > 0 ? lista[0].sq : null;
   const html = c => {
-    const st = c.st.startsWith('ELEITO') || c.st === 'MATEMATICAMENTE ELEITO' ? '<span class="st">ELEITO</span>'
+    const st = (c.st.startsWith('ELEITO') && !c.st.includes('PARCIAL')) || c.st === 'MATEMATICAMENTE ELEITO' ? '<span class="st">ELEITO</span>'
       : c.st === '2º TURNO' ? '<span class="st t2">2º TURNO</span>' : '';
     const ini = c.nome.split(' ').map(w => w[0]).slice(0, 2).join('');
     const [int, dc] = fpct(c.pct).split(',');
