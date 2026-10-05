@@ -145,10 +145,10 @@
   <div class="quadro" id="quadro"><iframe id="prev" title="Pré-visualização"></iframe></div>
 </main>
 
-<script src="dados.js?v=20261004l"></script>
-<script src="pesquisas.js?v=20261004l"></script>
-<script src="comparativos.js?v=20261004l"></script>
-<script src="formatos.js?v=20261004l"></script>
+<script src="dados.js?v=20261004m"></script>
+<script src="pesquisas.js?v=20261004m"></script>
+<script src="comparativos.js?v=20261004m"></script>
+<script src="formatos.js?v=20261004m"></script>
 <script>
 // Estúdio: escolhe tipo/formato/disputa, mostra a prévia e exporta vídeo (10 s) ou o quadro final.
 const TAM = { h: [1920, 1080], v: [1080, 1920], f: [1080, 1350] };
@@ -181,7 +181,7 @@ est.fonte = 'tse';   // só dados do TSE (simulação 2022 retirada)
 est.turno = '1';     // só 1º turno
 const $ = id => document.getElementById(id);
 
-const VERSAO = '20261004l';   // muda a cada publicação: as telas nunca vêm do cache antigo
+const VERSAO = '20261004m';   // muda a cada publicação: as telas nunca vêm do cache antigo
 function urlDe(extra = {}) {
   const q = new URLSearchParams();
   q.set('v', VERSAO);
@@ -271,8 +271,11 @@ function montarDisputas() {
   const dep = est.tipo === 'resultado' && ABAS.find(a => a.id === est.disputa).lista;
   $('blocoPos').style.display = dep ? '' : 'none';
   $('bTodos').style.display = dep ? '' : 'none';
-  if (dep && !$('pos').options.length)
-    $('pos').innerHTML = Array.from({ length: 46 }, (_, i) => `<option value="${i + 1}">${i + 1}º mais votado entre os eleitos</option>`).join('');
+  // uma opção por vaga do cargo (federal CE 22, estadual CE 46)
+  const vagas = dep ? ABAS.find(a => a.id === est.disputa).vagas || 46 : 0;
+  if (dep && $('pos').options.length !== vagas)
+    $('pos').innerHTML = Array.from({ length: vagas }, (_, i) => `<option value="${i + 1}">${i + 1}º mais votado entre os eleitos</option>`).join('');
+  if (dep && est.pos > vagas) est.pos = 1;
   $('pos').value = String(est.pos || 1);
 }
 

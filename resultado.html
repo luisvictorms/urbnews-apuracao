@@ -122,10 +122,10 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script src="sync.js?v=20261004l"></script>
-<script src="dados.js?v=20261004l"></script>
-<script src="pesquisas.js?v=20261004l"></script>   <!-- só para ordenar os candidatos antes do 1º voto -->
-<script src="exportar.js?v=20261004l"></script>
+<script src="sync.js?v=20261004m"></script>
+<script src="dados.js?v=20261004m"></script>
+<script src="pesquisas.js?v=20261004m"></script>   <!-- só para ordenar os candidatos antes do 1º voto -->
+<script src="exportar.js?v=20261004m"></script>
 <script>
 // Resultado: eleito(s) ou os dois do 2º turno da disputa escolhida (celular, teclado ou #aba); fica parado após a animação.
 // h = 1920x1080 · v = 1080x1920 (stories) · f = feed 1080x1350. ?numeros=0 esconde % e votos.
@@ -240,6 +240,7 @@ function definida(aba) {
   if (aba.lista) {                                   // deputados: um por vez
     total = window.__totalEleitos = eleitos.length;
     if (!eleitos.length) return null;
+    if (pos > eleitos.length && EXPORT) return null;  // estúdio: posição que não existe não vira o 1º de novo
     if (pos > eleitos.length) {                      // passou do último: volta ao 1º (e avisa o controle)
       pos = 1; history.replaceState(null, '', '#' + idAtual());
       if (window.Sync) Sync.enviar(idAtual());

@@ -24,8 +24,8 @@ const ABAS = [
     curto: uf.toUpperCase(), tecla: String(i + 1) })),
   ...SEN.map(uf => ({ id: 'sen-' + uf, cargo: 5, abr: uf, titulo: 'SENADO', local: UFS[uf], sub: '2 VAGAS', grupo: 'sen',
     curto: uf.toUpperCase(), tecla: '⇧' + (GOV.indexOf(uf) + 1) })),
-  { id: 'df-ce', cargo: 6, abr: 'ce', titulo: 'DEPUTADO FEDERAL', local: 'CEARÁ', sub: 'MAIS VOTADOS', grupo: 'dep', curto: 'FEDERAL', tecla: 'D', lista: 10 },
-  { id: 'de-ce', cargo: 7, abr: 'ce', titulo: 'DEPUTADO ESTADUAL', local: 'CEARÁ', sub: 'MAIS VOTADOS', grupo: 'dep', curto: 'ESTADUAL', tecla: 'E', lista: 10 },
+  { id: 'df-ce', cargo: 6, abr: 'ce', titulo: 'DEPUTADO FEDERAL', local: 'CEARÁ', sub: 'MAIS VOTADOS', grupo: 'dep', curto: 'FEDERAL', tecla: 'D', lista: 10, vagas: 22 },
+  { id: 'de-ce', cargo: 7, abr: 'ce', titulo: 'DEPUTADO ESTADUAL', local: 'CEARÁ', sub: 'MAIS VOTADOS', grupo: 'dep', curto: 'ESTADUAL', tecla: 'E', lista: 10, vagas: 46 },
 ];
 
 // tecla -> id da disputa (null se não for atalho)
